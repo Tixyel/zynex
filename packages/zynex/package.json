@@ -1,5 +1,6 @@
 {
   "name": "zynex",
+  "type": "module",
   "version": "1.0.0",
   "main": "dist/zynex.umd.js",
   "module": "dist/index.js",
