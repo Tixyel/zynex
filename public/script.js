@@ -1,4 +1,3 @@
-/** @import from 'zynex' */
 const { Client } = window.Zynex
 
 window.addEventListener('DOMContentLoaded', () => {
