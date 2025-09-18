@@ -24,8 +24,7 @@ pnpm-debug.log*
 .DS_Store
 
 # GitHub
-/.github/*instructions.md
-/.github/*guidelines.md
+/.github/instructions
 
 # Misc
 *.log
