@@ -1,3 +1,4 @@
+import './global.d.ts'
 import { Client } from './client/index.js'
 
 export const Zynex = {
