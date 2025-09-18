@@ -2,6 +2,8 @@ import { defineConfig } from 'vite'
 
 export default defineConfig({
   build: {
+    minify: true,
+    sourcemap: true,
     lib: {
       entry: 'src/index.ts',
       name: 'Zynex',
