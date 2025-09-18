@@ -1,4 +1,5 @@
 /** @import from 'zynex' */
+const { Client } = window.Zynex
 
 window.addEventListener('DOMContentLoaded', () => {
   if (window.Zynex) {
@@ -6,6 +7,16 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 })
 
-window.addEventListener('my-event', (event) => {
-  event.detail.foo
+new Client({
+  id: 'example',
 })
+  .on('load', (event) => {
+    event.channel
+  })
+  .on('event', (event) => {})
+  .on('action', (action, type) => {
+    action
+  })
+  .on('session', (session) => {
+    session['cheer-session']
+  })
