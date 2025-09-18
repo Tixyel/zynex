@@ -1,7 +1,7 @@
 {
   "name": "zynex",
   "type": "module",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "dist/zynex.umd.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -12,6 +12,10 @@
       "require": "./dist/zynex.umd.js"
     }
   },
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "build": "vite build && rollup -c rollup.config.js",
     "dev": "vite"
