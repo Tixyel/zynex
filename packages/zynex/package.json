@@ -19,7 +19,7 @@
   ],
   "scripts": {
     "build": "vite build && rollup -c rollup.config.js",
-    "dev": "vite"
+    "dev": "concurrently \"vite build --watch\" \"rollup -c rollup.config.js --watch\""
   },
   "dependencies": {},
   "devDependencies": {
