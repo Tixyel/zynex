@@ -1412,4 +1412,261 @@ export class Simulation {
       return result
     },
   }
+
+  static generate = {
+    session: {
+      types: {
+        name: { type: 'string', options: Simulation.data.names.filter((e) => e.length) },
+        tier: { type: 'string', options: Simulation.data.tiers.filter((e) => e.length) },
+        message: { type: 'string', options: Simulation.data.messages.filter((e) => e.length) },
+        item: { type: 'array', options: Simulation.data.items },
+        avatar: { type: 'string', options: Simulation.data.avatars.filter((e) => e.length) },
+      } as Record<string, Session$AnyConfig>,
+
+      available(): Session$AvailableData {
+        const types = this.types
+
+        return {
+          follower: {
+            latest: { name: types.name },
+            session: { count: { type: 'int', min: 50, max: 200 } },
+            week: { count: { type: 'int', min: 200, max: 1000 } },
+            month: { count: { type: 'int', min: 1000, max: 3000 } },
+            goal: { amount: { type: 'int', min: 3000, max: 7000 } },
+            total: { count: { type: 'int', min: 7000, max: 10000 } },
+            recent: {
+              type: 'recent',
+              amount: 25,
+              value: { name: types.name, createdAt: { type: 'date', range: 400 } },
+            },
+          },
+          subscriber: {
+            latest: {
+              name: types.name,
+              amount: { type: 'int', min: 10, max: 30 },
+              tier: types.tier,
+              message: types.message,
+            },
+            'new-latest': {
+              name: types.name,
+              amount: { type: 'int', min: 10, max: 30 },
+              message: types.message,
+            },
+            'resub-latest': {
+              name: types.name,
+              amount: { type: 'int', min: 10, max: 30 },
+              message: types.message,
+            },
+            'gifted-latest': {
+              name: types.name,
+              amount: { type: 'int', min: 10, max: 30 },
+              message: types.message,
+              tier: types.tier,
+              sender: types.name,
+            },
+            session: { count: { type: 'int', min: 10, max: 40 } },
+            'new-session': { count: { type: 'int', min: 10, max: 40 } },
+            'resub-session': { count: { type: 'int', min: 10, max: 40 } },
+            'gifted-session': { count: { type: 'int', min: 10, max: 40 } },
+            week: { count: { type: 'int', min: 40, max: 100 } },
+            month: { count: { type: 'int', min: 100, max: 200 } },
+            goal: { amount: { type: 'int', min: 200, max: 300 } },
+            total: { count: { type: 'int', min: 300, max: 400 } },
+            points: { amount: { type: 'int', min: 100, max: 400 } },
+            'alltime-gifter': { name: types.name, amount: { type: 'int', min: 300, max: 400 } },
+            recent: {
+              type: 'recent',
+              amount: 25,
+              value: {
+                name: types.name,
+                amount: { type: 'int', min: 10, max: 30 },
+                tier: types.tier,
+                createdAt: { type: 'date', range: 400 },
+              },
+            },
+          },
+          host: {
+            latest: { name: types.name, amount: { type: 'int', min: 1, max: 10 } },
+            recent: {
+              type: 'recent',
+              amount: 25,
+              value: {
+                name: types.name,
+                amount: { type: 'int', min: 1, max: 10 },
+                createdAt: { type: 'date', range: 400 },
+              },
+            },
+          },
+          raid: {
+            latest: { name: types.name, amount: { type: 'int', min: 0, max: 100 } },
+            recent: {
+              type: 'recent',
+              amount: 25,
+              value: {
+                name: types.name,
+                amount: { type: 'int', min: 0, max: 100 },
+                createdAt: { type: 'date', range: 400 },
+              },
+            },
+          },
+          charityCampaignDonation: {
+            latest: { name: types.name, amount: { type: 'int', min: 50, max: 150 } },
+            'session-top-donation': { name: types.name, amount: { type: 'int', min: 50, max: 200 } },
+            'weekly-top-donation': { name: types.name, amount: { type: 'int', min: 200, max: 500 } },
+            'monthly-top-donation': { name: types.name, amount: { type: 'int', min: 500, max: 800 } },
+            'alltime-top-donation': { name: types.name, amount: { type: 'int', min: 800, max: 1000 } },
+            'session-top-donator': { name: types.name, amount: { type: 'int', min: 50, max: 200 } },
+            'weekly-top-donator': { name: types.name, amount: { type: 'int', min: 200, max: 500 } },
+            'monthly-top-donator': { name: types.name, amount: { type: 'int', min: 500, max: 800 } },
+            'alltime-top-donator': { name: types.name, amount: { type: 'int', min: 800, max: 1000 } },
+            recent: {
+              type: 'recent',
+              amount: 25,
+              value: {
+                name: types.name,
+                amount: { type: 'int', min: 50, max: 150 },
+                createdAt: { type: 'date', range: 400 },
+              },
+            },
+          },
+          cheer: {
+            latest: { name: types.name, amount: { type: 'int', min: 200, max: 800 }, message: types.message },
+            'session-top-donation': { name: types.name, amount: { type: 'int', min: 200, max: 1000 } },
+            'weekly-top-donation': { name: types.name, amount: { type: 'int', min: 1000, max: 5000 } },
+            'monthly-top-donation': { name: types.name, amount: { type: 'int', min: 5000, max: 12000 } },
+            'alltime-top-donation': { name: types.name, amount: { type: 'int', min: 12000, max: 20000 } },
+            'session-top-donator': { name: types.name, amount: { type: 'int', min: 200, max: 1000 } },
+            'weekly-top-donator': { name: types.name, amount: { type: 'int', min: 1000, max: 5000 } },
+            'monthly-top-donator': { name: types.name, amount: { type: 'int', min: 5000, max: 12000 } },
+            'alltime-top-donator': { name: types.name, amount: { type: 'int', min: 12000, max: 20000 } },
+            session: { amount: { type: 'int', min: 200, max: 1000 } },
+            week: { amount: { type: 'int', min: 1000, max: 5000 } },
+            month: { amount: { type: 'int', min: 5000, max: 12000 } },
+            goal: { amount: { type: 'int', min: 12000, max: 18000 } },
+            total: { amount: { type: 'int', min: 18000, max: 20000 } },
+            count: { count: { type: 'int', min: 200, max: 1000 } },
+            recent: {
+              type: 'recent',
+              amount: 25,
+              value: {
+                name: types.name,
+                amount: { type: 'int', min: 200, max: 800 },
+                createdAt: { type: 'date', range: 400 },
+              },
+            },
+          },
+          cheerPurchase: {
+            latest: { name: types.name, amount: { type: 'int', min: 200, max: 400 } },
+            'session-top-donation': { name: types.name, amount: { type: 'int', min: 200, max: 400 } },
+            'weekly-top-donation': { name: types.name, amount: { type: 'int', min: 400, max: 800 } },
+            'monthly-top-donation': { name: types.name, amount: { type: 'int', min: 800, max: 1500 } },
+            'alltime-top-donation': { name: types.name, amount: { type: 'int', min: 1500, max: 2000 } },
+            'session-top-donator': { name: types.name, amount: { type: 'int', min: 200, max: 400 } },
+            'weekly-top-donator': { name: types.name, amount: { type: 'int', min: 400, max: 800 } },
+            'monthly-top-donator': { name: types.name, amount: { type: 'int', min: 800, max: 1500 } },
+            'alltime-top-donator': { name: types.name, amount: { type: 'int', min: 1500, max: 2000 } },
+            recent: {
+              type: 'recent',
+              amount: 25,
+              value: {
+                name: types.name,
+                amount: { type: 'int', min: 200, max: 400 },
+                createdAt: { type: 'date', range: 400 },
+              },
+            },
+          },
+          superchat: {
+            latest: { name: types.name, amount: { type: 'int', min: 100, max: 400 } },
+            'session-top-donation': { name: types.name, amount: { type: 'int', min: 100, max: 500 } },
+            'weekly-top-donation': { name: types.name, amount: { type: 'int', min: 500, max: 1000 } },
+            'monthly-top-donation': { name: types.name, amount: { type: 'int', min: 1000, max: 2000 } },
+            'alltime-top-donation': { name: types.name, amount: { type: 'int', min: 2000, max: 2500 } },
+            'session-top-donator': { name: types.name, amount: { type: 'int', min: 100, max: 500 } },
+            'weekly-top-donator': { name: types.name, amount: { type: 'int', min: 500, max: 1000 } },
+            'monthly-top-donator': { name: types.name, amount: { type: 'int', min: 1000, max: 2000 } },
+            'alltime-top-donator': { name: types.name, amount: { type: 'int', min: 2000, max: 2500 } },
+            session: { amount: { type: 'int', min: 100, max: 500 } },
+            week: { amount: { type: 'int', min: 500, max: 1000 } },
+            month: { amount: { type: 'int', min: 1000, max: 2000 } },
+            goal: { amount: { type: 'int', min: 2000, max: 2300 } },
+            total: { amount: { type: 'int', min: 2300, max: 2500 } },
+            count: { count: { type: 'int', min: 100, max: 500 } },
+            recent: {
+              type: 'recent',
+              amount: 25,
+              value: {
+                name: types.name,
+                amount: { type: 'int', min: 100, max: 400 },
+                createdAt: { type: 'date', range: 400 },
+              },
+            },
+          },
+          hypetrain: {
+            latest: {
+              name: types.name,
+              amount: { type: 'int', min: 0, max: 100 },
+              active: { type: 'int', min: 0, max: 1 },
+              level: { type: 'int', min: 5, max: 10 },
+              levelChanged: { type: 'int', min: 0, max: 5 },
+              _type: { type: 'array', options: ['follower', 'subscriber', 'cheer', 'donation'] },
+            },
+            'level-goal': { amount: { type: 'int', min: 0, max: 100 } },
+            'level-progress': { amount: { type: 'int', min: 0, max: 100 }, percent: { type: 'int', min: 0, max: 100 } },
+            total: { amount: { type: 'int', min: 0, max: 100 } },
+            'latest-top-contributors': { type: 'recent', amount: 25, value: { name: types.name } },
+          },
+          'channel-points': {
+            latest: {
+              name: types.name,
+              amount: { type: 'int', min: 0, max: 100 },
+              message: types.message,
+              redemption: { type: 'array', options: ['Reward 1', 'Reward 2', 'Reward 3'] },
+            },
+          },
+          tip: {
+            latest: { name: types.name, amount: { type: 'int', min: 100, max: 400 } },
+            'session-top-donation': { name: types.name, amount: { type: 'int', min: 100, max: 500 } },
+            'weekly-top-donation': { name: types.name, amount: { type: 'int', min: 500, max: 1000 } },
+            'monthly-top-donation': { name: types.name, amount: { type: 'int', min: 1000, max: 2000 } },
+            'alltime-top-donation': { name: types.name, amount: { type: 'int', min: 2000, max: 2500 } },
+            'session-top-donator': { name: types.name, amount: { type: 'int', min: 100, max: 500 } },
+            'weekly-top-donator': { name: types.name, amount: { type: 'int', min: 500, max: 1000 } },
+            'monthly-top-donator': { name: types.name, amount: { type: 'int', min: 1000, max: 2000 } },
+            'alltime-top-donator': { name: types.name, amount: { type: 'int', min: 2000, max: 2500 } },
+            session: { amount: { type: 'int', min: 100, max: 500 } },
+            week: { amount: { type: 'int', min: 500, max: 1000 } },
+            month: { amount: { type: 'int', min: 1000, max: 2000 } },
+            goal: { amount: { type: 'int', min: 2000, max: 2300 } },
+            total: { amount: { type: 'int', min: 2300, max: 2500 } },
+            count: { count: { type: 'int', min: 100, max: 500 } },
+            recent: {
+              type: 'recent',
+              amount: 25,
+              value: {
+                name: types.name,
+                amount: { type: 'int', min: 100, max: 400 },
+                createdAt: { type: 'date', range: 400 },
+              },
+            },
+          },
+          merch: {
+            latest: { name: types.name, amount: { type: 'int', min: 0, max: 100 }, items: types.item },
+            'goal-orders': { amount: { type: 'int', min: 0, max: 100 } },
+            'goal-items': { amount: { type: 'int', min: 0, max: 100 } },
+            'goal-total': { amount: { type: 'int', min: 0, max: 100 } },
+            recent: { type: 'recent', amount: 25, value: { name: types.name } },
+          },
+          purchase: {
+            latest: {
+              name: types.name,
+              amount: { type: 'int', min: 0, max: 100 },
+              items: types.item,
+              avatar: types.avatar,
+              message: types.message,
+            },
+          },
+        }
+      },
+    },
+  }
 }
