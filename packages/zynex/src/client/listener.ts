@@ -73,11 +73,53 @@ window.addEventListener('onEventReceived', ({ detail }) => {
 
     if (actAsStreamElements.some((l) => l === detail.listener)) provider = 'streamelements'
 
-    const received: ClientEvents = { provider: provider, data: detail }
+    const received = { provider: provider, data: detail } as ClientEvents
 
     switch (received.provider) {
       case 'streamelements': {
         const data = received.data
+
+        switch (data.listener) {
+          case 'tip-latest': {
+            const event = data.event
+            break
+          }
+          case 'event:skip': {
+            const event = data.event
+            break
+          }
+          case 'event:test': {
+            switch (data.event.listener) {
+              case 'widget-button': {
+                const event = data.event
+
+                // Button.execute(event.field, event.value)
+
+                break
+              }
+              case 'subscriber-latest': {
+                const event = data.event
+                break
+              }
+
+              // ... alot more
+            }
+
+            break
+          }
+          case 'kvstore:update': {
+            const event = data.event
+            break
+          }
+          case 'bot:counter': {
+            const event = data.event
+            break
+          }
+          case 'alertService:toggleSound': {
+            const event = data.event
+            break
+          }
+        }
 
         break
       }
@@ -86,23 +128,23 @@ window.addEventListener('onEventReceived', ({ detail }) => {
 
         switch (data.listener) {
           case 'delete-message': {
-            const event = detail.event
+            const event = data.event
             break
           }
           case 'delete-messages': {
-            const event = detail.event
+            const event = data.event
             break
           }
           case 'message': {
-            const event = detail.event
+            const event = data.event
             break
           }
           case 'follower-latest': {
-            const event = detail.event
+            const event = data.event
             break
           }
           case 'cheer-latest': {
-            const event = detail.event
+            const event = data.event
             break
           }
           case 'subscriber-latest': {
@@ -123,7 +165,7 @@ window.addEventListener('onEventReceived', ({ detail }) => {
             break
           }
           case 'raid-latest': {
-            const event = detail.event
+            const event = data.event
             break
           }
         }
@@ -137,6 +179,45 @@ window.addEventListener('onEventReceived', ({ detail }) => {
       }
       case 'youtube': {
         const data = received.data
+
+        switch (data.listener) {
+          case 'message': {
+            const event = data.event
+
+            // Command.execute({ provider: 'youtube', data: data })
+
+            break
+          }
+          case 'subscriber-latest': {
+            const event = data.event
+
+            break
+          }
+          case 'sponsor-latest': {
+            const event = data.event
+
+            if (!data.event.gifted && !data.event.bulkGifted && !data.event.isCommunityGift) {
+              // normal
+              const event = data.event
+            } else if (data.event.gifted && !data.event.bulkGifted && !data.event.isCommunityGift) {
+              // gift
+              const event = data.event
+            } else if (data.event.gifted && !data.event.bulkGifted && data.event.isCommunityGift) {
+              // community gift spam
+              const event = data.event
+            } else if (!data.event.gifted && data.event.bulkGifted && !data.event.isCommunityGift) {
+              // community gift
+              const event = data.event
+            }
+
+            break
+          }
+          case 'superchat-latest': {
+            const event = data.event
+
+            break
+          }
+        }
 
         break
       }
