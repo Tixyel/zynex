@@ -864,4 +864,225 @@ export class Simulation {
       'Naayf',
     ] as string[],
   }
+
+  static color = {
+    random() {
+      return `#${Math.floor(Math.random() * 0xffffff)
+        .toString(16)
+        .padStart(6, '0')}`
+    },
+
+    opacity(opacity: number = 100, color: string) {
+      color = color.length > 7 ? color.substring(0, 6) : color
+      opacity = opacity > 1 ? opacity / 100 : opacity
+
+      let result = Math.round(Math.min(Math.max(opacity, 0), 1) * 255)
+        .toString(16)
+        .toLowerCase()
+
+      result = result.padStart(2, '0')
+
+      return color + result
+    },
+
+    getOpacity(hex: string) {
+      if (!hex.startsWith('#') || hex.length <= 7) return { opacity: 100, hex }
+
+      var ohex = hex.slice(-2)
+      var decimal = parseInt(ohex, 16) / 255
+      var percentage = Math.round(decimal * 100)
+      var color = hex.length > 7 ? hex.slice(0, 7) : hex
+
+      return { opacity: percentage, color: color }
+    },
+
+    validate(str: string): 'hex' | 'rgb' | 'rgba' | 'hsl' | 'hsla' | 'css-color-name' | false {
+      if (typeof str !== 'string' || !str.length) return false
+
+      const s = str.trim()
+
+      // HEX (#FFF, #FFFFFF, #FFFFFFFF)
+      if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(s) || /^#([A-Fa-f0-9]{4}|[A-Fa-f0-9]{8})$/.test(s)) {
+        return 'hex'
+      }
+
+      // rgb(255, 255, 255)
+      if (/^rgb\(\s*(?:\d{1,3}\s*,\s*){2}\d{1,3}\s*\)$/.test(s)) {
+        return 'rgb'
+      }
+
+      // rgba(255, 255, 255, 0.5)
+      if (/^rgba\(\s*(?:\d{1,3}\s*,\s*){3}(?:0|1|0?\.\d+)\s*\)$/.test(s)) {
+        return 'rgba'
+      }
+
+      // hsl(360, 100%, 100%)
+      if (/^hsl\(\s*\d{1,3}\s*,\s*\d{1,3}%\s*,\s*\d{1,3}%\s*\)$/.test(s)) {
+        return 'hsl'
+      }
+
+      // hsla(360, 100%, 100%, 0.5)
+      if (/^hsla\(\s*\d{1,3}\s*,\s*\d{1,3}%\s*,\s*\d{1,3}%\s*,\s*(?:0|1|0?\.\d+)\s*\)$/.test(s)) {
+        return 'hsla'
+      }
+
+      if (
+        [
+          'aliceblue',
+          'antiquewhite',
+          'aqua',
+          'aquamarine',
+          'azure',
+          'beige',
+          'bisque',
+          'black',
+          'blanchedalmond',
+          'blue',
+          'blueviolet',
+          'brown',
+          'burlywood',
+          'cadetblue',
+          'chartreuse',
+          'chocolate',
+          'coral',
+          'cornflowerblue',
+          'cornsilk',
+          'crimson',
+          'cyan',
+          'darkblue',
+          'darkcyan',
+          'darkgoldenrod',
+          'darkgray',
+          'darkgreen',
+          'darkgrey',
+          'darkkhaki',
+          'darkmagenta',
+          'darkolivegreen',
+          'darkorange',
+          'darkorchid',
+          'darkred',
+          'darksalmon',
+          'darkseagreen',
+          'darkslateblue',
+          'darkslategray',
+          'darkslategrey',
+          'darkturquoise',
+          'darkviolet',
+          'deeppink',
+          'deepskyblue',
+          'dimgray',
+          'dimgrey',
+          'dodgerblue',
+          'firebrick',
+          'floralwhite',
+          'forestgreen',
+          'fuchsia',
+          'gainsboro',
+          'ghostwhite',
+          'gold',
+          'goldenrod',
+          'gray',
+          'green',
+          'greenyellow',
+          'grey',
+          'honeydew',
+          'hotpink',
+          'indianred',
+          'indigo',
+          'ivory',
+          'khaki',
+          'lavender',
+          'lavenderblush',
+          'lawngreen',
+          'lemonchiffon',
+          'lightblue',
+          'lightcoral',
+          'lightcyan',
+          'lightgoldenrodyellow',
+          'lightgray',
+          'lightgreen',
+          'lightgrey',
+          'lightpink',
+          'lightsalmon',
+          'lightseagreen',
+          'lightskyblue',
+          'lightslategray',
+          'lightslategrey',
+          'lightsteelblue',
+          'lightyellow',
+          'lime',
+          'limegreen',
+          'linen',
+          'magenta',
+          'maroon',
+          'mediumaquamarine',
+          'mediumblue',
+          'mediumorchid',
+          'mediumpurple',
+          'mediumseagreen',
+          'mediumslateblue',
+          'mediumspringgreen',
+          'mediumturquoise',
+          'mediumvioletred',
+          'midnightblue',
+          'mintcream',
+          'mistyrose',
+          'moccasin',
+          'navajowhite',
+          'navy',
+          'oldlace',
+          'olive',
+          'olivedrab',
+          'orange',
+          'orangered',
+          'orchid',
+          'palegoldenrod',
+          'palegreen',
+          'paleturquoise',
+          'palevioletred',
+          'papayawhip',
+          'peachpuff',
+          'peru',
+          'pink',
+          'plum',
+          'powderblue',
+          'purple',
+          'rebeccapurple',
+          'red',
+          'rosybrown',
+          'royalblue',
+          'saddlebrown',
+          'salmon',
+          'sandybrown',
+          'seagreen',
+          'seashell',
+          'sienna',
+          'silver',
+          'skyblue',
+          'slateblue',
+          'slategray',
+          'slategrey',
+          'snow',
+          'springgreen',
+          'steelblue',
+          'tan',
+          'teal',
+          'thistle',
+          'tomato',
+          'turquoise',
+          'violet',
+          'wheat',
+          'white',
+          'whitesmoke',
+          'yellow',
+          'yellowgreen',
+          'transparent',
+        ].includes(s.toLowerCase())
+      ) {
+        return 'css-color-name'
+      }
+
+      return false
+    },
+  }
 }
