@@ -1669,4 +1669,236 @@ export class Simulation {
       },
     },
   }
+
+  static fields(settings: FieldSettings): Record<string, StreamElementsField> {
+    const defaultOptions: NormalizedFieldSettings = {
+      from: 'main',
+      endsWith: [],
+      ignore: [],
+      replace: {},
+      subgroup: false,
+      template: '• {key}',
+      subgroupTemplate: '★ {key}',
+      settings: {
+        types: [
+          [['size', 'width', 'number', 'gap', 'duration'], 'number'],
+          [['options', 'dropdown', 'weight'], 'dropdown'],
+          [['range', 'radius'], 'slider'],
+          [['color', 'background'], 'colorpicker'],
+          [['font-family', 'font', 'family'], 'googleFont'],
+        ],
+        addons: [
+          [['slider', 'radius'], { step: 1, min: 0, max: 'inherit' }],
+          [['options', 'dropdown'], { options: {} }],
+          [
+            ['weight'],
+            {
+              options: {
+                '100': 'Thin',
+                '200': 'Extra Light',
+                '300': 'Light',
+                '400': 'Regular',
+                '500': 'Medium',
+                '600': 'Semi Bold',
+                '700': 'Bold',
+                '800': 'Extra Bold',
+                '900': 'Black',
+              },
+            },
+          ],
+        ],
+        transforms: [
+          [['size', 'width', 'number', 'gap', 'duration'], (value) => parseFloat(String(value))],
+          [['font-family', 'font', 'family'], (value) => value],
+          [['range', 'radius'], (value) => parseFloat(String(value))],
+          [['options', 'dropdown'], (value) => value],
+          [['weight'], (value) => value],
+          [['color', 'background'], (value) => value],
+        ],
+        labels: [
+          [['font-size'], ' • In pixels'],
+          [['font-radius'], ' • In pixels'],
+        ],
+      },
+    }
+
+    function normalizeFieldSettings(settings: FieldSettings): NormalizedFieldSettings {
+      return {
+        ...defaultOptions,
+        ...settings,
+        endsWith: Array.isArray(settings.endsWith) ? settings.endsWith : defaultOptions.endsWith,
+        ignore: Array.isArray(settings.ignore) ? settings.ignore : defaultOptions.ignore,
+        replace: { ...defaultOptions.replace, ...(settings.replace ?? {}) },
+        settings: {
+          types: Array.isArray(settings.settings?.types) ? settings.settings.types : defaultOptions.settings.types,
+          addons: Array.isArray(settings.settings?.addons) ? settings.settings.addons : defaultOptions.settings.addons,
+          transforms: Array.isArray(settings.settings?.transforms)
+            ? settings.settings.transforms
+            : defaultOptions.settings.transforms,
+          labels: Array.isArray(settings.settings?.labels) ? settings.settings.labels : defaultOptions.settings.labels,
+        },
+        subgroup: settings.subgroup ?? defaultOptions.subgroup,
+        template: settings.template ?? defaultOptions.template,
+        subgroupTemplate: settings.subgroupTemplate ?? defaultOptions.subgroupTemplate,
+        from: settings.from ?? defaultOptions.from,
+      }
+    }
+
+    const options = normalizeFieldSettings(settings)
+
+    const extractCssVariables = (): Record<string, string> => {
+      return Array.from(document.styleSheets)
+        .filter(({ href }) => !href || href.startsWith(window.location.origin))
+        .reduce((acc, { cssRules }) => {
+          if (!cssRules) return acc
+          Array.from(cssRules).forEach((rule) => {
+            if (
+              rule instanceof CSSStyleRule &&
+              rule.selectorText === options.from &&
+              Array.from(rule.style).some((prop) => prop.startsWith('--'))
+            ) {
+              Array.from(rule.style)
+                .filter((prop) => prop.startsWith('--'))
+                .forEach((prop) => {
+                  acc[prop] = rule.style.getPropertyValue(prop).trim()
+                })
+            }
+          })
+          return acc
+        }, {} as Record<string, string>)
+    }
+
+    const allVariables = extractCssVariables()
+
+    const filteredVariables = Object.entries(allVariables)
+      .filter(([name]) =>
+        options.endsWith.some(
+          (suffix) => name.toLowerCase().endsWith(suffix.toLowerCase()) && !name.includes('-options-'),
+        ),
+      )
+      .filter(([name]) => !options.ignore.some((ignoreName) => name.toLowerCase() === ignoreName.toLowerCase()))
+      .reduce((acc, [name, value]) => {
+        acc[name.replace('--', '')] = String(options.replace?.[name] ?? value)
+        return acc
+      }, {} as Record<string, string | number>)
+
+    let usedSubgroups: string[] = []
+
+    const fields = Object.entries(filteredVariables).reduce((fields, [name, value]) => {
+      let type =
+        options.settings.types.find(([names]) => names.some((n) => name.toLowerCase().includes(n)))?.[1] || 'text'
+
+      let transform =
+        options.settings.transforms.find(([names]) => names.some((n) => name.toLowerCase().includes(n)))?.[1] ||
+        ((v: any) => v)
+
+      let labelAddon =
+        options.settings.labels.find(([names]) => names.some((n) => name.toLowerCase().includes(n)))?.[1] || ''
+
+      let fieldAddons: Record<string, any> = {
+        type: 'text',
+        label: labelAddon,
+        ...(options.settings.addons.find(([names]) => names.some((n) => name.toLowerCase().includes(n)))?.[1] || {}),
+      }
+
+      ;(['min', 'max', 'step', 'label', 'type'] as const).forEach((addonKey) => {
+        const addonValue = allVariables[`--${name}-${addonKey}`]
+        if (addonValue && addonValue.length) {
+          fieldAddons[addonKey] = isNaN(parseFloat(addonValue))
+            ? String(addonValue).replace(/^['"]|['"]$/g, '')
+            : String(parseFloat(addonValue))
+        }
+      })
+
+      let subgroupKey = name
+        .replace(/-(size|color|weight|width|height|gap|duration|radius|amount)$/g, '')
+        .replace(/-([a-z])/g, (_, c) => c.toUpperCase())
+        .replace(/[A-Z]/g, ' $&')
+        .toLowerCase()
+        .trim()
+
+      let matchingSubgroupVars = Object.keys(filteredVariables).filter((key) =>
+        key.startsWith(subgroupKey.replace(/[A-Z]/g, '-$&').replaceAll(' ', '-').toLowerCase().slice(1)),
+      )
+
+      if (
+        options.subgroup &&
+        !fields[`${subgroupKey.replace(/[A-Z]/g, '-$&').replaceAll(' ', '-').toLowerCase().slice(1)}-subgroup`] &&
+        matchingSubgroupVars.length > 1 &&
+        !usedSubgroups.includes(name)
+      ) {
+        usedSubgroups.push(...matchingSubgroupVars)
+
+        fields[`${subgroupKey.replace(/[A-Z]/g, '-$&').replaceAll(' ', '-').toLowerCase().slice(1)}-subgroup`] = {
+          type: 'hidden',
+          label: options.subgroupTemplate.replaceAll('{key}', Simulation.string.capitalize(subgroupKey)),
+        }
+      }
+
+      let label = Simulation.string.capitalize(
+        name
+          .replace(/-([a-z])/g, (_, c) => c.toUpperCase())
+          .replace(/[A-Z]/g, ' $&')
+          .toLowerCase(),
+      )
+
+      value = transform(value) ?? value
+
+      const getCustomOptions = () => {
+        const values = Object.entries(allVariables)
+          .filter(([key]) => key.startsWith(`--${name}-options-`))
+          .reduce((acc, [key, value]) => {
+            const optionLabel = key.replace(`--${name}-options-`, '')
+            if (optionLabel)
+              acc[String(value)] = Simulation.string.capitalize(
+                optionLabel
+                  .replace(/-([a-z])/g, (_, c) => c.toUpperCase())
+                  .replace(/[A-Z]/g, ' $&')
+                  .toLowerCase(),
+              )
+            return acc
+          }, {} as Record<string, string>)
+        return Object.keys(values).length ? values : null
+      }
+
+      const customOptions = getCustomOptions()
+
+      if (customOptions) {
+        type = 'dropdown'
+        fieldAddons.options = customOptions
+        value = String(value)
+      }
+
+      Object.entries(fieldAddons).forEach(([key, val]) => {
+        if ([false, 'inherit', 'auto', null].includes(val)) fieldAddons[key] = value
+      })
+
+      fields[name] = {
+        type: (fieldAddons.type as StreamElementsFieldTypes) || type,
+        label: options.template.toString().replaceAll('{key}', Simulation.string.capitalize(label) + fieldAddons.label),
+        value,
+        min: fieldAddons.min,
+        max: fieldAddons.max,
+        step: fieldAddons.step,
+        options: fieldAddons.options,
+      }
+
+      return fields
+    }, {} as Record<string, StreamElementsField>)
+
+    const errors = Object.entries(fields).reduce((acc, [name, field]) => {
+      const hasInvalidLabel = field?.label?.includes('undefined')
+      const isInvalidValue = !['hidden', 'button'].includes(field.type) && field.value === undefined
+      if (hasInvalidLabel || isInvalidValue) acc[name] = field
+      return acc
+    }, {} as Record<string, StreamElementsField>)
+
+    if (Object.keys(errors).length) {
+      Zynex.logger.error('Simulation.fields: Detected errors in generated fields:', errors)
+
+      throw new Error('Error while processing fields')
+    }
+
+    return fields
+  }
 }
