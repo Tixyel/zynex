@@ -1085,4 +1085,40 @@ export class Simulation {
       return false
     },
   }
+
+  static rand = {
+    number(min: number, max: number, float: number = 0): number {
+      if (min > max) [min, max] = [max, min]
+
+      const rand = Math.random() * (max - min) + min
+      return float ? Number(rand.toFixed(float)) : Math.round(rand)
+    },
+
+    boolean(threshold: number = 0.5): boolean {
+      return Math.random() > threshold
+    },
+
+    string(length: number, chars: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'): string {
+      let result = ''
+
+      for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length))
+      }
+
+      return result
+    },
+
+    array<T>(arr: T[]): [T, number] {
+      const index = this.number(0, arr.length - 1)
+
+      return [arr[index], index]
+    },
+
+    date(rangeDays: number = 365): string {
+      const now = Date.now()
+      const past = now - this.number(0, rangeDays * 24 * 60 * 60 * 1000)
+
+      return new Date(past).toISOString()
+    },
+  }
 }
