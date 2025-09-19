@@ -1,6 +1,6 @@
 export type YouTube$Superchat = {
   listener: 'superchat-latest'
-  data: Superchat
+  event: Superchat
 }
 
 type Superchat = {

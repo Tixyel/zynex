@@ -1,6 +1,6 @@
 export type Youtube$Message = {
   listener: 'message'
-  data: YTMessage
+  event: YTMessage
 }
 
 type YTMessage = {
