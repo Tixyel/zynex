@@ -86,7 +86,7 @@ export class useStorage<T extends object = Record<string, any>> extends EventPro
     callback: (...args: UseStorageEvents<T>[K]) => void,
   ): this {
     if (eventName === 'load' && this.loaded) {
-      callback(this.data as any)
+      callback.apply(this, [this.data])
 
       return this
     }
