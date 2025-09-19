@@ -1121,4 +1121,295 @@ export class Simulation {
       return new Date(past).toISOString()
     },
   }
+
+  static string = {
+    async replace(
+      string: string,
+      pattern: string,
+      callback: (match: string, ...groups: string[]) => Promise<string> | string,
+    ): Promise<string> {
+      const promises: Array<Promise<string>> = []
+
+      string.replace(pattern, (match: string, ...groups: string[]) => {
+        const promise = typeof callback === 'function' ? callback(match, ...groups) : match
+
+        promises.push(Promise.resolve(promise))
+
+        return match
+      })
+
+      const replacements = await Promise.all(promises)
+
+      return string.replace(pattern, () => replacements.shift() ?? '')
+    },
+
+    capitalize(string: string): string {
+      return string.charAt(0).toUpperCase() + string.slice(1)
+    },
+
+    compose(
+      template: string,
+      _values: Record<string, any>,
+      amount: number = _values?.amount ?? _values?.count ?? 0,
+      recursive: boolean = true,
+    ): string {
+      const values: Record<string, string> = Object.entries(Simulation.object.flatten(_values)).reduce(
+        (acc, [k, v]) => {
+          acc[k] = String(v)
+
+          if (['username', 'name', 'nick', 'nickname', 'sender'].some((e) => k === e)) {
+            const username = acc?.username || acc?.name || acc?.nick || acc?.nickname || acc?.sender
+
+            acc['username'] = acc.username || username
+            acc['usernameAt'] = `@${acc.username}`
+            acc['name'] = acc.name || username
+            acc['nick'] = acc.nick || username
+            acc['nickname'] = acc.nickname || username
+            acc['sender'] = acc.sender || username
+            acc['senderAt'] = `@${acc.sender}`
+          }
+
+          if (['amount', 'count'].some((e) => k === e)) {
+            acc['amount'] = String(amount)
+            acc['count'] = String(acc?.count || amount)
+          }
+
+          acc['currency'] = acc.currency || window.client?.details.currency.symbol || '$'
+          acc['currencyCode'] = acc.currencyCode || window.client?.details.currency.code || 'USD'
+
+          acc['skip'] = '<br/>'
+          acc['newline'] = '<br/>'
+
+          return acc
+        },
+        {} as Record<string, string>,
+      )
+
+      const REGEX = {
+        PLACEHOLDERS: /{([^}]+)}/g,
+        MODIFIERS: /\[(\w+)(:[^=]+)?=([^\]]+)\]/g,
+      }
+
+      type Modifier = (
+        value: string,
+        param: string | null | undefined,
+        values: { amount?: number; count?: number },
+      ) => string
+
+      const MODIFIERS: Record<string, Modifier> = {
+        BT1: (value) => (amount > 1 ? value : ''),
+        BT0: (value) => (amount > 0 ? value : ''),
+        ST1: (value) => (amount < 1 ? value : ''),
+        ST0: (value) => (amount < 0 ? value : ''),
+        UPC: (value) => value.toUpperCase(),
+        LOW: (value) => value.toLowerCase(),
+        REV: (value) => value.split('').reverse().join(''),
+        CAP: (value) => value.charAt(0).toUpperCase() + value.slice(1).toLowerCase(),
+        FALLBACK: (value, param) => (value.length ? value : param ?? value),
+        COLOR: (value, param) =>
+          mergeSpanStyles(param && !!Simulation.color.validate(param) ? `color: ${param}` : '', value),
+        WEIGHT: (value, param) =>
+          mergeSpanStyles(param && !isNaN(parseInt(param)) ? `font-weight: ${param}` : '', value),
+        BOLD: (value) => mergeSpanStyles('font-weight: bold', value),
+        LIGHT: (value) => mergeSpanStyles('font-weight: lighter', value),
+        STRONG: (value) => mergeSpanStyles('font-weight: bolder', value),
+        ITALIC: (value) => mergeSpanStyles('font-style: italic', value),
+        UNDERLINE: (value) => mergeSpanStyles('text-decoration: underline', value),
+        STRIKETHROUGH: (value) => mergeSpanStyles('text-decoration: line-through', value),
+        SUB: (value) => mergeSpanStyles('vertical-align: sub', value),
+        SUP: (value) => mergeSpanStyles('vertical-align: super', value),
+        LARGER: (value) => mergeSpanStyles('font-size: larger', value),
+        SMALL: (value) => mergeSpanStyles('font-size: smaller', value),
+        SHADOW: (value, param) => mergeSpanStyles(`text-shadow: ${param}`, value),
+      }
+
+      const ALIASES = {
+        UPC: ['UPPERCASE', 'UPPER', 'UPP'],
+        LOW: ['LOWERCASE', 'LOWER', 'LWC'],
+        REV: ['REVERSE', 'RVS'],
+        CAP: ['CAPITALIZE', 'CAPITAL'],
+        BT1: ['BIGGER_THAN_1', 'GREATER_THAN_1', 'GT1'],
+        BT0: ['BIGGER_THAN_0', 'GREATER_THAN_0', 'GT0'],
+        ST1: ['SMALLER_THAN_1', 'LESS_THAN_1', 'LT1'],
+        ST0: ['SMALLER_THAN_0', 'LESS_THAN_0', 'LT0'],
+        COLOR: ['COLOUR', 'CLR', 'HIGHLIGHT'],
+        BOLD: ['BOLDEN', 'B'],
+        STRONG: ['STRONGEN', 'STRONG'],
+        ITALIC: ['ITALICIZE', 'ITALIC', 'I'],
+        UNDERLINE: ['U', 'INS', 'INSET', 'I'],
+        STRIKETHROUGH: ['STRIKE', 'S', 'DELETE', 'D'],
+        SUB: ['SUBSCRIPT', 'SUBS'],
+        SUP: ['SUPERSCRIPT', 'SUPS'],
+        LARGER: ['LARGER', 'LG'],
+        SMALL: ['SMALLER', 'SM'],
+        SHADOW: ['SHADOW', 'SHD'],
+        FALLBACK: ['FALLBACK', 'FB'],
+      }
+
+      function applyModifier(value: string, name: string, param: string | null | undefined): string {
+        const canonical = Object.entries(ALIASES).find(([key, aliases]) => {
+          if (aliases.some((alias) => alias.toUpperCase() === name.toUpperCase())) return true
+          else if (key.toUpperCase() === name.toUpperCase()) return true
+          else return false
+        })
+        const use = canonical ? canonical[0] : name.toUpperCase()
+
+        if (MODIFIERS[use]) return MODIFIERS[use](value, typeof param === 'string' ? param.trim() : null, values)
+        else return value
+      }
+
+      function replaceAll(string: string): string {
+        let str = string
+        let match
+
+        while ((match = REGEX.MODIFIERS.exec(str)) !== null) {
+          const [fullMatch, modifier, param, value] = match
+
+          const newValue = applyModifier(replaceAll(value), modifier, param)
+
+          str = str.replace(fullMatch, newValue ?? '')
+
+          REGEX.MODIFIERS.lastIndex = 0
+        }
+
+        return str
+      }
+
+      function parseModifiers(str: string): string {
+        let i = 0
+        const len = str.length
+
+        function parseText(stopChar?: string): string {
+          let out = ''
+          while (i < len) {
+            if (str[i] === '\\') {
+              if (i + 1 < len) {
+                out += str[i + 1]
+                i += 2
+              } else {
+                i++
+              }
+            } else if (str[i] === '[' && (!stopChar || stopChar !== '[')) {
+              out += parseModifier()
+            } else if (stopChar && str[i] === stopChar) {
+              i++
+              break
+            } else {
+              out += str[i++]
+            }
+          }
+          return out
+        }
+
+        function parseModifier(): string {
+          i++
+          let name = ''
+          while (i < len && /[A-Za-z0-9]/.test(str[i])) name += str[i++]
+          let param: string | null = null
+          if (str[i] === ':') {
+            i++
+            const paramStart = i
+            while (i < len && str[i] !== '=') i++
+            param = str.slice(paramStart, i)
+          }
+          if (str[i] === '=') i++
+          const value = parseText(']')
+          return applyModifier(value, name, param)
+        }
+
+        return parseText()
+      }
+
+      function mergeSpanStyles(outerStyle: string, innerHTML: string): string {
+        const match = innerHTML.match(/^<span style="([^"]*)">(.*)<\/span>$/s)
+
+        if (match) {
+          const innerStyle = match[1]
+          const content = match[2]
+
+          const mergedStyle = [innerStyle, outerStyle]
+
+            .filter(Boolean)
+            .join('; ')
+            .replace(/\s*;\s*/g, '; ')
+            .trim()
+
+          return `<span style="${mergedStyle}">${content}</span>`
+        } else {
+          return `<span style="${outerStyle}">${innerHTML}</span>`
+        }
+      }
+
+      let result = template.replace(REGEX.PLACEHOLDERS, (_, key: string) =>
+        typeof values[key] === 'string' || typeof values[key] === 'number' ? String(values[key]) : key ?? key,
+      )
+
+      result = recursive ? parseModifiers(result) : replaceAll(result)
+
+      return result
+    },
+  }
+
+  static object = {
+    flatten(obj: Record<string, any>, prefix: string = ''): Record<string, string> {
+      const result = {} as Record<string, string>
+
+      for (const key in obj) {
+        if (!Object.prototype.hasOwnProperty.call(obj, key)) continue
+
+        const value = obj[key]
+        const path = prefix ? `${prefix}.${key}` : key
+
+        // Handle null and undefined
+        if (value === null || value === undefined) {
+          result[path] = String(value)
+
+          continue
+        }
+
+        // Handle Date objects
+        if (value instanceof Date) {
+          result[path] = value.toISOString()
+
+          continue
+        }
+
+        // Handle Map objects
+        if (value instanceof Map) {
+          value.forEach((v, k) => {
+            result[`${path}.${k}`] = JSON.stringify(v)
+          })
+
+          continue
+        }
+
+        // Handle Array objects
+        if (Array.isArray(value)) {
+          value.forEach((v, i) => {
+            const itemPath = `${path}:${i}`
+
+            if (typeof v === 'object') {
+              Object.assign(result, this.flatten(v, itemPath))
+            } else {
+              result[itemPath] = String(v)
+            }
+          })
+
+          continue
+        }
+
+        // Handle nested objects
+        if (typeof value === 'object') {
+          Object.assign(result, this.flatten(value, path))
+
+          continue
+        }
+
+        // Handle primitive values (string, number, boolean, etc.)
+        result[path] = String(value)
+      }
+
+      return result
+    },
+  }
 }
