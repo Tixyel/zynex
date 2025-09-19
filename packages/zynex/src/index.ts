@@ -2,9 +2,11 @@ import { Client } from './client/index.js'
 import { onEventReceivedEvent } from './types/streamelements/events/onEventReceived.js'
 import { onSessionUpdateEvent } from './types/streamelements/events/onSessionUpdate.js'
 import { onWidgetLoadEvent } from './types/streamelements/events/onWidgetLoad.js'
+import { Logger } from './utils/Logger.js'
 
 export const Zynex = {
   Client: Client,
+  logger: new Logger(),
 }
 
 declare global {
