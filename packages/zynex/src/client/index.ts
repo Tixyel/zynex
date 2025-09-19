@@ -36,9 +36,11 @@ export class Client extends EventProvider<ClientEvents> {
 
   public storage!: useStorage<ClientStorage>
 
-  public fields: Record<string, string | number | boolean> = {}
+  public fields: onWidgetLoad['fieldData'] = {}
 
   public session!: Session
+
+  public loaded: boolean = false
 
   constructor(options: ClientOptions) {
     super()
@@ -77,5 +79,27 @@ export class Client extends EventProvider<ClientEvents> {
     avatar: 30,
     pronoun: 30,
     emote: 30,
+  }
+
+  override on<K extends keyof ClientEvents>(eventName: K, callback: (...args: ClientEvents[K]) => void): this {
+    if (eventName === 'load' && this.loaded) {
+      callback.apply(this, [
+        {
+          channel: this.details.user,
+          currency: this.details.currency,
+          fieldData: this.fields,
+          recents: [],
+          session: { data: this.session, autoReset: false, calendar: false, resetOnStart: false },
+          overlay: this.details.overlay,
+          emulated: false,
+        } as onWidgetLoad,
+      ] as unknown as ClientEvents[K])
+
+      return this
+    }
+
+    super.on(eventName, callback)
+
+    return this
   }
 }
