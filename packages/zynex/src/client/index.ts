@@ -4,6 +4,8 @@ import { EventProvider } from '../utils/EventProvider.js'
 import { useStorage } from '../utils/useStorage.js'
 import { Session } from '../types/streamelements/session.js'
 import { ClientEvents as events } from '../types/client.js'
+import { Command } from '../actions/command.js'
+import { Button } from '../actions/button.js'
 
 type ClientEvents = {
   load: [event: onWidgetLoad]
@@ -57,8 +59,8 @@ export class Client extends EventProvider<ClientEvents> {
   }
 
   public actions: {
-    commands: never[]
-    buttons: never[]
+    commands: Command[]
+    buttons: Button[]
   } = {
     commands: [],
     buttons: [],
