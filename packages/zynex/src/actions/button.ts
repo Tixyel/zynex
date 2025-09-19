@@ -1,4 +1,5 @@
 import { Client } from '../client/index.js'
+import { Zynex } from '../index.js'
 
 interface ButtonOptions {
   field: string | ((field: string, value: string | boolean | number) => boolean)
@@ -54,6 +55,8 @@ export class Button {
 
         if (button && button instanceof Button) {
           button.parse(field, value)
+
+          Zynex.logger.received(`Button executed: ${field} with value: ${value}`)
 
           return true
         }

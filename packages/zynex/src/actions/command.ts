@@ -1,4 +1,5 @@
 import { Client } from '../client/index.js'
+import { Zynex } from '../index.js'
 import { Twitch$Message } from '../types/streamelements/events/twitch/message.js'
 import { Youtube$Message } from '../types/streamelements/events/youtube/message.js'
 
@@ -160,6 +161,11 @@ export class Command {
 
         if (command && command instanceof Command) {
           command.parse(data.event.data.text, received)
+
+          Zynex.logger.received(
+            `Command executed: ${data.event.data.text} by ${data.event.data.nick || data.event.data.displayName}`,
+            data,
+          )
 
           return true
         }
