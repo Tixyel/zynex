@@ -69,7 +69,7 @@ export class Client extends EventProvider<ClientEvents> {
   };
 
   public details!: {
-    provider: 'twitch' | 'youtube' | 'kick';
+    provider: 'twitch' | 'youtube' | 'kick' | 'local';
     user: onWidgetLoad['channel'];
     currency: onWidgetLoad['currency'];
     overlay: onWidgetLoad['overlay'];
@@ -89,7 +89,14 @@ export class Client extends EventProvider<ClientEvents> {
           currency: this.details.currency,
           fieldData: this.fields,
           recents: [],
-          session: { data: this.session, autoReset: false, calendar: false, resetOnStart: false },
+          session: {
+            data: this.session,
+            settings: {
+              autoReset: false,
+              calendar: false,
+              resetOnStart: false,
+            },
+          },
           overlay: this.details.overlay,
           emulated: false,
         } as onWidgetLoad,
