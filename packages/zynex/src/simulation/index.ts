@@ -1,9 +1,18 @@
+import { Client } from '../client/index.js';
 import { Zynex } from '../index.js';
 import { Alejo$Pronouns } from '../types/alejo/pronouns.js';
 import { TwitchBadge } from '../types/badge.js';
 import { BttvEmote, SeventvEmote, TwitchEmote } from '../types/emote.js';
-import { FieldSettings, NormalizedFieldSettings, StreamElementsField, StreamElementsFieldTypes } from '../types/streamelements/customfields.js';
-import { Session$AnyConfig, Session$AvailableData } from '../types/streamelements/session.generate.js';
+import {
+  FieldSettings,
+  NormalizedFieldSettings,
+  StreamElementsField,
+  StreamElementsFieldTypes,
+  StreamElementsFieldValue,
+} from '../types/streamelements/customfields.js';
+import { onWidgetLoad } from '../types/streamelements/events/onWidgetLoad.js';
+import { Session$AnyConfig, Session$AvailableCategory, Session$AvailableData } from '../types/streamelements/session.generate.js';
+import { Session } from '../types/streamelements/session.js';
 
 export class Simulation {
   static data = {
@@ -1139,37 +1148,34 @@ export class Simulation {
     },
 
     compose(template: string, _values: Record<string, any>, amount: number = _values?.amount ?? _values?.count ?? 0, recursive: boolean = true): string {
-      const values: Record<string, string> = Object.entries(Simulation.object.flatten(_values)).reduce(
-        (acc, [k, v]) => {
-          acc[k] = String(v);
+      const values: Record<string, string> = Object.entries(Simulation.object.flatten(_values)).reduce((acc, [k, v]) => {
+        acc[k] = String(v);
 
-          if (['username', 'name', 'nick', 'nickname', 'sender'].some((e) => k === e)) {
-            const username = acc?.username || acc?.name || acc?.nick || acc?.nickname || acc?.sender;
+        if (['username', 'name', 'nick', 'nickname', 'sender'].some((e) => k === e)) {
+          const username = acc?.username || acc?.name || acc?.nick || acc?.nickname || acc?.sender;
 
-            acc['username'] = acc.username || username;
-            acc['usernameAt'] = `@${acc.username}`;
-            acc['name'] = acc.name || username;
-            acc['nick'] = acc.nick || username;
-            acc['nickname'] = acc.nickname || username;
-            acc['sender'] = acc.sender || username;
-            acc['senderAt'] = `@${acc.sender}`;
-          }
+          acc['username'] = acc.username || username;
+          acc['usernameAt'] = `@${acc.username}`;
+          acc['name'] = acc.name || username;
+          acc['nick'] = acc.nick || username;
+          acc['nickname'] = acc.nickname || username;
+          acc['sender'] = acc.sender || username;
+          acc['senderAt'] = `@${acc.sender}`;
+        }
 
-          if (['amount', 'count'].some((e) => k === e)) {
-            acc['amount'] = String(amount);
-            acc['count'] = String(acc?.count || amount);
-          }
+        if (['amount', 'count'].some((e) => k === e)) {
+          acc['amount'] = String(amount);
+          acc['count'] = String(acc?.count || amount);
+        }
 
-          acc['currency'] = acc.currency || window.client?.details.currency.symbol || '$';
-          acc['currencyCode'] = acc.currencyCode || window.client?.details.currency.code || 'USD';
+        acc['currency'] = acc.currency || window.client?.details.currency.symbol || '$';
+        acc['currencyCode'] = acc.currencyCode || window.client?.details.currency.code || 'USD';
 
-          acc['skip'] = '<br/>';
-          acc['newline'] = '<br/>';
+        acc['skip'] = '<br/>';
+        acc['newline'] = '<br/>';
 
-          return acc;
-        },
-        {} as Record<string, string>,
-      );
+        return acc;
+      }, {} as Record<string, string>);
 
       const REGEX = {
         PLACEHOLDERS: /{([^}]+)}/g,
@@ -1187,7 +1193,7 @@ export class Simulation {
         LOW: (value) => value.toLowerCase(),
         REV: (value) => value.split('').reverse().join(''),
         CAP: (value) => value.charAt(0).toUpperCase() + value.slice(1).toLowerCase(),
-        FALLBACK: (value, param) => (value.length ? value : (param ?? value)),
+        FALLBACK: (value, param) => (value.length ? value : param ?? value),
         COLOR: (value, param) => mergeSpanStyles(param && !!Simulation.color.validate(param) ? `color: ${param}` : '', value),
         WEIGHT: (value, param) => mergeSpanStyles(param && !isNaN(parseInt(param)) ? `font-weight: ${param}` : '', value),
         BOLD: (value) => mergeSpanStyles('font-weight: bold', value),
@@ -1321,7 +1327,7 @@ export class Simulation {
       }
 
       let result = template.replace(REGEX.PLACEHOLDERS, (_, key: string) =>
-        typeof values[key] === 'string' || typeof values[key] === 'number' ? String(values[key]) : (key ?? key),
+        typeof values[key] === 'string' || typeof values[key] === 'number' ? String(values[key]) : key ?? key,
       );
 
       result = recursive ? parseModifiers(result) : replaceAll(result);
@@ -1647,6 +1653,117 @@ export class Simulation {
           },
         };
       },
+
+      async get(): Promise<Session> {
+        const available = this.available();
+
+        const generate = (available: Session$AvailableData | Session$AvailableCategory | Session$AnyConfig): any => {
+          const generateRecentData = (config: Session$AnyConfig): Array<any> => {
+            if (!config || !('amount' in config)) return [];
+
+            const items: Array<{ createdAt: string }> = [];
+
+            for (let i = 0; i < config.amount; i++) {
+              items.push(generate(config.value));
+            }
+
+            return items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          };
+
+          const generateObjectData = (config: Record<string, any>): Record<string, any> => {
+            const result: Record<string, any> = {};
+
+            for (const key in config) {
+              const processedKey = key.replace('_type', 'type');
+
+              result[processedKey] = generate(config[key]);
+            }
+
+            return result;
+          };
+
+          const processTypedConfig = (config: Session$AnyConfig): any => {
+            if (!config) return config;
+
+            switch (config.type) {
+              case 'int':
+                return Simulation.rand.number(config.min, config.max);
+              case 'string':
+                return Simulation.rand.array(config.options)[0];
+              case 'date':
+                return Simulation.rand.date(config.range);
+              case 'array':
+                return Simulation.rand.array(config.options)[0];
+              case 'recent':
+                return generateRecentData(config);
+              default:
+                return config;
+            }
+          };
+
+          // Main generation logic
+
+          // Handle primitive values (non-objects)
+          if (typeof available !== 'object' || available === null) {
+            return available;
+          }
+
+          // Handle typed configurations (objects with a 'type' property)
+          if ('type' in available && typeof available.type === 'string') {
+            return processTypedConfig(available);
+          }
+
+          // Handle generic objects - recursively process each property
+          return generateObjectData(available);
+        };
+
+        var session: Session = Object.entries(generate(available)).reduce((acc, [key, value]) => {
+          Object.entries(value as any).forEach(
+            ([subKey, subValue]) =>
+              //
+              (acc[`${key}-${subKey}`] = subValue),
+          );
+
+          return acc;
+        }, {} as Record<string, any>) as Session;
+
+        return session;
+      },
+    },
+    event: {
+      async onWidgetLoad(fields: Record<string, StreamElementsFieldValue>, session: Session, currency: 'BRL' | 'USD' | 'EUR' = 'USD'): Promise<onWidgetLoad> {
+        const currencies = {
+          BRL: { code: 'BRL', name: 'Brazilian Real', symbol: 'R$' },
+          USD: { code: 'USD', name: 'US Dollar', symbol: '$' },
+          EUR: { code: 'EUR', name: 'Euro', symbol: '€' },
+        };
+
+        return {
+          channel: {
+            username: 'local',
+            apiToken: '',
+            id: '',
+            providerId: '',
+            avatar: '',
+          },
+          currency: currencies[currency] ?? currencies.USD,
+          fieldData: fields,
+          recents: [],
+          session: {
+            data: session,
+            settings: {
+              autoReset: false,
+              calendar: false,
+              resetOnStart: false,
+            },
+          },
+          overlay: {
+            isEditorMode: true,
+            muted: false,
+          },
+          emulated: true,
+        };
+      },
     },
   };
 
@@ -1727,22 +1844,19 @@ export class Simulation {
     const extractCssVariables = (): Record<string, string> => {
       return Array.from(document.styleSheets)
         .filter(({ href }) => !href || href.startsWith(window.location.origin))
-        .reduce(
-          (acc, { cssRules }) => {
-            if (!cssRules) return acc;
-            Array.from(cssRules).forEach((rule) => {
-              if (rule instanceof CSSStyleRule && rule.selectorText === options.from && Array.from(rule.style).some((prop) => prop.startsWith('--'))) {
-                Array.from(rule.style)
-                  .filter((prop) => prop.startsWith('--'))
-                  .forEach((prop) => {
-                    acc[prop] = rule.style.getPropertyValue(prop).trim();
-                  });
-              }
-            });
-            return acc;
-          },
-          {} as Record<string, string>,
-        );
+        .reduce((acc, { cssRules }) => {
+          if (!cssRules) return acc;
+          Array.from(cssRules).forEach((rule) => {
+            if (rule instanceof CSSStyleRule && rule.selectorText === options.from && Array.from(rule.style).some((prop) => prop.startsWith('--'))) {
+              Array.from(rule.style)
+                .filter((prop) => prop.startsWith('--'))
+                .forEach((prop) => {
+                  acc[prop] = rule.style.getPropertyValue(prop).trim();
+                });
+            }
+          });
+          return acc;
+        }, {} as Record<string, string>);
     };
 
     const allVariables = extractCssVariables();
@@ -1750,127 +1864,115 @@ export class Simulation {
     const filteredVariables = Object.entries(allVariables)
       .filter(([name]) => options.endsWith.some((suffix) => name.toLowerCase().endsWith(suffix.toLowerCase()) && !name.includes('-options-')))
       .filter(([name]) => !options.ignore.some((ignoreName) => name.toLowerCase() === ignoreName.toLowerCase()))
-      .reduce(
-        (acc, [name, value]) => {
-          acc[name.replace('--', '')] = String(options.replace?.[name] ?? value);
-          return acc;
-        },
-        {} as Record<string, string | number>,
-      );
+      .reduce((acc, [name, value]) => {
+        acc[name.replace('--', '')] = String(options.replace?.[name] ?? value);
+        return acc;
+      }, {} as Record<string, string | number>);
 
     let usedSubgroups: string[] = [];
 
-    const fields = Object.entries(filteredVariables).reduce(
-      (fields, [name, value]) => {
-        let type = options.settings.types.find(([names]) => names.some((n) => name.toLowerCase().includes(n)))?.[1] || 'text';
+    const fields = Object.entries(filteredVariables).reduce((fields, [name, value]) => {
+      let type = options.settings.types.find(([names]) => names.some((n) => name.toLowerCase().includes(n)))?.[1] || 'text';
 
-        let transform = options.settings.transforms.find(([names]) => names.some((n) => name.toLowerCase().includes(n)))?.[1] || ((v: any) => v);
+      let transform = options.settings.transforms.find(([names]) => names.some((n) => name.toLowerCase().includes(n)))?.[1] || ((v: any) => v);
 
-        let labelAddon = options.settings.labels.find(([names]) => names.some((n) => name.toLowerCase().includes(n)))?.[1] || '';
+      let labelAddon = options.settings.labels.find(([names]) => names.some((n) => name.toLowerCase().includes(n)))?.[1] || '';
 
-        let fieldAddons: Record<string, any> = {
-          type: 'text',
-          label: labelAddon,
-          ...(options.settings.addons.find(([names]) => names.some((n) => name.toLowerCase().includes(n)))?.[1] || {}),
+      let fieldAddons: Record<string, any> = {
+        type: 'text',
+        label: labelAddon,
+        ...(options.settings.addons.find(([names]) => names.some((n) => name.toLowerCase().includes(n)))?.[1] || {}),
+      };
+
+      (['min', 'max', 'step', 'label', 'type'] as const).forEach((addonKey) => {
+        const addonValue = allVariables[`--${name}-${addonKey}`];
+        if (addonValue && addonValue.length) {
+          fieldAddons[addonKey] = isNaN(parseFloat(addonValue)) ? String(addonValue).replace(/^['"]|['"]$/g, '') : String(parseFloat(addonValue));
+        }
+      });
+
+      let subgroupKey = name
+        .replace(/-(size|color|weight|width|height|gap|duration|radius|amount)$/g, '')
+        .replace(/-([a-z])/g, (_, c) => c.toUpperCase())
+        .replace(/[A-Z]/g, ' $&')
+        .toLowerCase()
+        .trim();
+
+      let matchingSubgroupVars = Object.keys(filteredVariables).filter((key) =>
+        key.startsWith(subgroupKey.replace(/[A-Z]/g, '-$&').replaceAll(' ', '-').toLowerCase().slice(1)),
+      );
+
+      if (
+        options.subgroup &&
+        !fields[`${subgroupKey.replace(/[A-Z]/g, '-$&').replaceAll(' ', '-').toLowerCase().slice(1)}-subgroup`] &&
+        matchingSubgroupVars.length > 1 &&
+        !usedSubgroups.includes(name)
+      ) {
+        usedSubgroups.push(...matchingSubgroupVars);
+
+        fields[`${subgroupKey.replace(/[A-Z]/g, '-$&').replaceAll(' ', '-').toLowerCase().slice(1)}-subgroup`] = {
+          type: 'hidden',
+          label: options.subgroupTemplate.replaceAll('{key}', Simulation.string.capitalize(subgroupKey)),
         };
+      }
 
-        (['min', 'max', 'step', 'label', 'type'] as const).forEach((addonKey) => {
-          const addonValue = allVariables[`--${name}-${addonKey}`];
-          if (addonValue && addonValue.length) {
-            fieldAddons[addonKey] = isNaN(parseFloat(addonValue)) ? String(addonValue).replace(/^['"]|['"]$/g, '') : String(parseFloat(addonValue));
-          }
-        });
-
-        let subgroupKey = name
-          .replace(/-(size|color|weight|width|height|gap|duration|radius|amount)$/g, '')
+      let label = Simulation.string.capitalize(
+        name
           .replace(/-([a-z])/g, (_, c) => c.toUpperCase())
           .replace(/[A-Z]/g, ' $&')
-          .toLowerCase()
-          .trim();
+          .toLowerCase(),
+      );
 
-        let matchingSubgroupVars = Object.keys(filteredVariables).filter((key) =>
-          key.startsWith(subgroupKey.replace(/[A-Z]/g, '-$&').replaceAll(' ', '-').toLowerCase().slice(1)),
-        );
+      value = transform(value) ?? value;
 
-        if (
-          options.subgroup &&
-          !fields[`${subgroupKey.replace(/[A-Z]/g, '-$&').replaceAll(' ', '-').toLowerCase().slice(1)}-subgroup`] &&
-          matchingSubgroupVars.length > 1 &&
-          !usedSubgroups.includes(name)
-        ) {
-          usedSubgroups.push(...matchingSubgroupVars);
+      const getCustomOptions = () => {
+        const values = Object.entries(allVariables)
+          .filter(([key]) => key.startsWith(`--${name}-options-`))
+          .reduce((acc, [key, value]) => {
+            const optionLabel = key.replace(`--${name}-options-`, '');
+            if (optionLabel)
+              acc[String(value)] = Simulation.string.capitalize(
+                optionLabel
+                  .replace(/-([a-z])/g, (_, c) => c.toUpperCase())
+                  .replace(/[A-Z]/g, ' $&')
+                  .toLowerCase(),
+              );
+            return acc;
+          }, {} as Record<string, string>);
+        return Object.keys(values).length ? values : null;
+      };
 
-          fields[`${subgroupKey.replace(/[A-Z]/g, '-$&').replaceAll(' ', '-').toLowerCase().slice(1)}-subgroup`] = {
-            type: 'hidden',
-            label: options.subgroupTemplate.replaceAll('{key}', Simulation.string.capitalize(subgroupKey)),
-          };
-        }
+      const customOptions = getCustomOptions();
 
-        let label = Simulation.string.capitalize(
-          name
-            .replace(/-([a-z])/g, (_, c) => c.toUpperCase())
-            .replace(/[A-Z]/g, ' $&')
-            .toLowerCase(),
-        );
+      if (customOptions) {
+        type = 'dropdown';
+        fieldAddons.options = customOptions;
+        value = String(value);
+      }
 
-        value = transform(value) ?? value;
+      Object.entries(fieldAddons).forEach(([key, val]) => {
+        if ([false, 'inherit', 'auto', null].includes(val)) fieldAddons[key] = value;
+      });
 
-        const getCustomOptions = () => {
-          const values = Object.entries(allVariables)
-            .filter(([key]) => key.startsWith(`--${name}-options-`))
-            .reduce(
-              (acc, [key, value]) => {
-                const optionLabel = key.replace(`--${name}-options-`, '');
-                if (optionLabel)
-                  acc[String(value)] = Simulation.string.capitalize(
-                    optionLabel
-                      .replace(/-([a-z])/g, (_, c) => c.toUpperCase())
-                      .replace(/[A-Z]/g, ' $&')
-                      .toLowerCase(),
-                  );
-                return acc;
-              },
-              {} as Record<string, string>,
-            );
-          return Object.keys(values).length ? values : null;
-        };
+      fields[name] = {
+        type: (fieldAddons.type as StreamElementsFieldTypes) || type,
+        label: options.template.toString().replaceAll('{key}', Simulation.string.capitalize(label) + fieldAddons.label),
+        value,
+        min: fieldAddons.min,
+        max: fieldAddons.max,
+        step: fieldAddons.step,
+        options: fieldAddons.options,
+      };
 
-        const customOptions = getCustomOptions();
+      return fields;
+    }, {} as Record<string, StreamElementsField>);
 
-        if (customOptions) {
-          type = 'dropdown';
-          fieldAddons.options = customOptions;
-          value = String(value);
-        }
-
-        Object.entries(fieldAddons).forEach(([key, val]) => {
-          if ([false, 'inherit', 'auto', null].includes(val)) fieldAddons[key] = value;
-        });
-
-        fields[name] = {
-          type: (fieldAddons.type as StreamElementsFieldTypes) || type,
-          label: options.template.toString().replaceAll('{key}', Simulation.string.capitalize(label) + fieldAddons.label),
-          value,
-          min: fieldAddons.min,
-          max: fieldAddons.max,
-          step: fieldAddons.step,
-          options: fieldAddons.options,
-        };
-
-        return fields;
-      },
-      {} as Record<string, StreamElementsField>,
-    );
-
-    const errors = Object.entries(fields).reduce(
-      (acc, [name, field]) => {
-        const hasInvalidLabel = field?.label?.includes('undefined');
-        const isInvalidValue = !['hidden', 'button'].includes(field.type) && field.value === undefined;
-        if (hasInvalidLabel || isInvalidValue) acc[name] = field;
-        return acc;
-      },
-      {} as Record<string, StreamElementsField>,
-    );
+    const errors = Object.entries(fields).reduce((acc, [name, field]) => {
+      const hasInvalidLabel = field?.label?.includes('undefined');
+      const isInvalidValue = !['hidden', 'button'].includes(field.type) && field.value === undefined;
+      if (hasInvalidLabel || isInvalidValue) acc[name] = field;
+      return acc;
+    }, {} as Record<string, StreamElementsField>);
 
     if (Object.keys(errors).length) {
       Zynex.logger.error('Simulation.fields: Detected errors in generated fields:', errors);
@@ -1879,5 +1981,52 @@ export class Simulation {
     }
 
     return fields;
+  }
+
+  static async start() {
+    const localFiles = {
+      fields: ['fields.json', 'cf.json', 'field.json', 'customfields.json'].find((file) => {
+        try {
+          new URL('./' + file, window.location.href);
+          return true;
+        } catch (error) {
+          return false;
+        }
+      }),
+      data: ['data.json', 'fielddata.json', 'fd.json', 'DATA.json'].find((file) => {
+        try {
+          new URL('./' + file, window.location.href);
+          return true;
+        } catch (error) {
+          return false;
+        }
+      }),
+    };
+
+    const data: Record<string, string | number | boolean> = await fetch('./' + (localFiles.data ?? 'data.json'), {
+      cache: 'no-store',
+    })
+      .then((res) => res.json())
+      .catch(() => ({}));
+
+    await fetch('./' + (localFiles.fields ?? 'fields.json'), {
+      cache: 'no-store',
+    })
+      .then((res) => res.json())
+      .then(async (customfields: Record<string, StreamElementsField>) => {
+        const fields = Object.entries(customfields)
+          .filter(([_, { value }]) => value != undefined)
+          .reduce((acc, [key, { value }]) => {
+            if (data && data[key] !== undefined) value = data[key];
+
+            acc[key] = value;
+
+            return acc;
+          }, {} as Record<string, StreamElementsFieldValue>);
+
+        const load = await Simulation.generate.event.onWidgetLoad(fields, await Simulation.generate.session.get());
+
+        window.dispatchEvent(new CustomEvent('onWidgetLoad', { detail: load }));
+      });
   }
 }
