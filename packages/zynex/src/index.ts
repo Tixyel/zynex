@@ -4,6 +4,7 @@ import { onEventReceivedEvent } from './types/streamelements/events/onEventRecei
 import { onSessionUpdateEvent } from './types/streamelements/events/onSessionUpdate.js';
 import { onWidgetLoadEvent } from './types/streamelements/events/onWidgetLoad.js';
 import { Logger } from './utils/Logger.js';
+import './client/listener.js';
 
 export const Zynex = {
   Client: Client,
