@@ -1,3 +1,4 @@
+import { StreamElementsFieldValue } from '../customfields.js';
 import { Session } from '../session.js';
 
 export type onWidgetLoadEvent = CustomEvent<onWidgetLoad>;
@@ -24,13 +25,15 @@ export type onWidgetLoad = {
     name: string;
     symbol: string;
   };
-  fieldData: Record<string, string | number | boolean>;
+  fieldData: Record<string, StreamElementsFieldValue>;
   recents: Array<Object>;
   session: {
     data: Session;
-    autoReset: boolean;
-    calendar: boolean;
-    resetOnStart: boolean;
+    settings: {
+      autoReset: boolean;
+      calendar: boolean;
+      resetOnStart: boolean;
+    };
   };
   overlay: {
     /**
