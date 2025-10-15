@@ -11,6 +11,8 @@ new Client({
 })
   .on('load', (event) => {
     event.channel;
+
+    console.log('loaded', event);
   })
   .on('event', (event) => {})
   .on('action', (action, type) => {
