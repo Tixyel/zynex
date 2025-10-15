@@ -1,61 +1,61 @@
 export type Twitch$Subscriber = {
-  listener: 'subscriber-latest'
-  event: Subscriber
-}
+  listener: 'subscriber-latest';
+  event: Subscriber;
+};
 
-type Subscriber = Subscriber$default & (Subscriber$normal | Subscriber$gift | Subscriber$community | Subscriber$spam)
+type Subscriber = Subscriber$default & (Subscriber$normal | Subscriber$gift | Subscriber$community | Subscriber$spam);
 
 type Subscriber$default = {
-  amount: number
-  name: string
-  displayName: string
+  amount: number;
+  name: string;
+  displayName: string;
 
-  message?: string
-  providerId?: string
-  avatar?: string
-  sender?: string
+  message?: string;
+  providerId?: string;
+  avatar?: string;
+  sender?: string;
 
-  gifted?: boolean
-  bulkGifted?: boolean
-  isCommunityGift?: boolean
+  gifted?: boolean;
+  bulkGifted?: boolean;
+  isCommunityGift?: boolean;
 
-  _id?: string
-  sessionTop?: boolean
-  playedAsCommunityGift?: boolean
+  _id?: string;
+  sessionTop?: boolean;
+  playedAsCommunityGift?: boolean;
 
-  type: 'subscriber'
-  originalEventName: 'subscriber-latest'
-}
+  type: 'subscriber';
+  originalEventName: 'subscriber-latest';
+};
 
 type Subscriber$normal = {
-  sender?: undefined
+  sender?: undefined;
 
-  gifted?: false
-  bulkGifted?: false
-  isCommunityGift?: false
-}
+  gifted?: false;
+  bulkGifted?: false;
+  isCommunityGift?: false;
+};
 
 type Subscriber$gift = {
-  sender: string
+  sender: string;
 
-  gifted: true
-  bulkGifted?: false
-  isCommunityGift?: false
-}
+  gifted: true;
+  bulkGifted?: false;
+  isCommunityGift?: false;
+};
 
 type Subscriber$community = {
-  message: string
-  sender: string
+  message: string;
+  sender: string;
 
-  gifted?: false
-  bulkGifted: true
-  isCommunityGift?: false
-}
+  gifted?: false;
+  bulkGifted: true;
+  isCommunityGift?: false;
+};
 
 type Subscriber$spam = {
-  sender: string
+  sender: string;
 
-  gifted: true
-  bulkGifted?: false
-  isCommunityGift: true
-}
+  gifted: true;
+  bulkGifted?: false;
+  isCommunityGift: true;
+};

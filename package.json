@@ -13,12 +13,14 @@
     "lint": "turbo run lint",
     "watch": "turbo run build --watch",
     "version": "changeset version && git add --all",
-    "release": "npm run build && changeset publish"
+    "release": "npm run build && changeset publish",
+    "prettier": "prettier --write packages/"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.7",
     "@svitejs/changesets-changelog-github-compact": "^1.2.0",
     "concurrently": "^9.2.1",
+    "prettier": "^3.6.2",
     "rollup-plugin-dts": "^6.2.3",
     "turbo": "^2.5.6",
     "typescript": "^5.9.2"

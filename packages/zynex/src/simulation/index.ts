@@ -1,14 +1,9 @@
-import { Zynex } from '../index.js'
-import { Alejo$Pronouns } from '../types/alejo/pronouns.js'
-import { TwitchBadge } from '../types/badge.js'
-import { BttvEmote, SeventvEmote, TwitchEmote } from '../types/emote.js'
-import {
-  FieldSettings,
-  NormalizedFieldSettings,
-  StreamElementsField,
-  StreamElementsFieldTypes,
-} from '../types/streamelements/customfields.js'
-import { Session$AnyConfig, Session$AvailableData } from '../types/streamelements/session.generate.js'
+import { Zynex } from '../index.js';
+import { Alejo$Pronouns } from '../types/alejo/pronouns.js';
+import { TwitchBadge } from '../types/badge.js';
+import { BttvEmote, SeventvEmote, TwitchEmote } from '../types/emote.js';
+import { FieldSettings, NormalizedFieldSettings, StreamElementsField, StreamElementsFieldTypes } from '../types/streamelements/customfields.js';
+import { Session$AnyConfig, Session$AvailableData } from '../types/streamelements/session.generate.js';
 
 export class Simulation {
   static data = {
@@ -863,67 +858,67 @@ export class Simulation {
       'Hoda',
       'Naayf',
     ] as string[],
-  }
+  };
 
   static color = {
     random() {
       return `#${Math.floor(Math.random() * 0xffffff)
         .toString(16)
-        .padStart(6, '0')}`
+        .padStart(6, '0')}`;
     },
 
     opacity(opacity: number = 100, color: string) {
-      color = color.length > 7 ? color.substring(0, 6) : color
-      opacity = opacity > 1 ? opacity / 100 : opacity
+      color = color.length > 7 ? color.substring(0, 6) : color;
+      opacity = opacity > 1 ? opacity / 100 : opacity;
 
       let result = Math.round(Math.min(Math.max(opacity, 0), 1) * 255)
         .toString(16)
-        .toLowerCase()
+        .toLowerCase();
 
-      result = result.padStart(2, '0')
+      result = result.padStart(2, '0');
 
-      return color + result
+      return color + result;
     },
 
     getOpacity(hex: string) {
-      if (!hex.startsWith('#') || hex.length <= 7) return { opacity: 100, hex }
+      if (!hex.startsWith('#') || hex.length <= 7) return { opacity: 100, hex };
 
-      var ohex = hex.slice(-2)
-      var decimal = parseInt(ohex, 16) / 255
-      var percentage = Math.round(decimal * 100)
-      var color = hex.length > 7 ? hex.slice(0, 7) : hex
+      var ohex = hex.slice(-2);
+      var decimal = parseInt(ohex, 16) / 255;
+      var percentage = Math.round(decimal * 100);
+      var color = hex.length > 7 ? hex.slice(0, 7) : hex;
 
-      return { opacity: percentage, color: color }
+      return { opacity: percentage, color: color };
     },
 
     validate(str: string): 'hex' | 'rgb' | 'rgba' | 'hsl' | 'hsla' | 'css-color-name' | false {
-      if (typeof str !== 'string' || !str.length) return false
+      if (typeof str !== 'string' || !str.length) return false;
 
-      const s = str.trim()
+      const s = str.trim();
 
       // HEX (#FFF, #FFFFFF, #FFFFFFFF)
       if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(s) || /^#([A-Fa-f0-9]{4}|[A-Fa-f0-9]{8})$/.test(s)) {
-        return 'hex'
+        return 'hex';
       }
 
       // rgb(255, 255, 255)
       if (/^rgb\(\s*(?:\d{1,3}\s*,\s*){2}\d{1,3}\s*\)$/.test(s)) {
-        return 'rgb'
+        return 'rgb';
       }
 
       // rgba(255, 255, 255, 0.5)
       if (/^rgba\(\s*(?:\d{1,3}\s*,\s*){3}(?:0|1|0?\.\d+)\s*\)$/.test(s)) {
-        return 'rgba'
+        return 'rgba';
       }
 
       // hsl(360, 100%, 100%)
       if (/^hsl\(\s*\d{1,3}\s*,\s*\d{1,3}%\s*,\s*\d{1,3}%\s*\)$/.test(s)) {
-        return 'hsl'
+        return 'hsl';
       }
 
       // hsla(360, 100%, 100%, 0.5)
       if (/^hsla\(\s*\d{1,3}\s*,\s*\d{1,3}%\s*,\s*\d{1,3}%\s*,\s*(?:0|1|0?\.\d+)\s*\)$/.test(s)) {
-        return 'hsla'
+        return 'hsla';
       }
 
       if (
@@ -1079,122 +1074,109 @@ export class Simulation {
           'transparent',
         ].includes(s.toLowerCase())
       ) {
-        return 'css-color-name'
+        return 'css-color-name';
       }
 
-      return false
+      return false;
     },
-  }
+  };
 
   static rand = {
     number(min: number, max: number, float: number = 0): number {
-      if (min > max) [min, max] = [max, min]
+      if (min > max) [min, max] = [max, min];
 
-      const rand = Math.random() * (max - min) + min
-      return float ? Number(rand.toFixed(float)) : Math.round(rand)
+      const rand = Math.random() * (max - min) + min;
+      return float ? Number(rand.toFixed(float)) : Math.round(rand);
     },
 
     boolean(threshold: number = 0.5): boolean {
-      return Math.random() > threshold
+      return Math.random() > threshold;
     },
 
     string(length: number, chars: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'): string {
-      let result = ''
+      let result = '';
 
       for (let i = 0; i < length; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length))
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
       }
 
-      return result
+      return result;
     },
 
     array<T>(arr: T[]): [T, number] {
-      const index = this.number(0, arr.length - 1)
+      const index = this.number(0, arr.length - 1);
 
-      return [arr[index], index]
+      return [arr[index], index];
     },
 
     date(rangeDays: number = 365): string {
-      const now = Date.now()
-      const past = now - this.number(0, rangeDays * 24 * 60 * 60 * 1000)
+      const now = Date.now();
+      const past = now - this.number(0, rangeDays * 24 * 60 * 60 * 1000);
 
-      return new Date(past).toISOString()
+      return new Date(past).toISOString();
     },
-  }
+  };
 
   static string = {
-    async replace(
-      string: string,
-      pattern: string,
-      callback: (match: string, ...groups: string[]) => Promise<string> | string,
-    ): Promise<string> {
-      const promises: Array<Promise<string>> = []
+    async replace(string: string, pattern: string, callback: (match: string, ...groups: string[]) => Promise<string> | string): Promise<string> {
+      const promises: Array<Promise<string>> = [];
 
       string.replace(pattern, (match: string, ...groups: string[]) => {
-        const promise = typeof callback === 'function' ? callback(match, ...groups) : match
+        const promise = typeof callback === 'function' ? callback(match, ...groups) : match;
 
-        promises.push(Promise.resolve(promise))
+        promises.push(Promise.resolve(promise));
 
-        return match
-      })
+        return match;
+      });
 
-      const replacements = await Promise.all(promises)
+      const replacements = await Promise.all(promises);
 
-      return string.replace(pattern, () => replacements.shift() ?? '')
+      return string.replace(pattern, () => replacements.shift() ?? '');
     },
 
     capitalize(string: string): string {
-      return string.charAt(0).toUpperCase() + string.slice(1)
+      return string.charAt(0).toUpperCase() + string.slice(1);
     },
 
-    compose(
-      template: string,
-      _values: Record<string, any>,
-      amount: number = _values?.amount ?? _values?.count ?? 0,
-      recursive: boolean = true,
-    ): string {
+    compose(template: string, _values: Record<string, any>, amount: number = _values?.amount ?? _values?.count ?? 0, recursive: boolean = true): string {
       const values: Record<string, string> = Object.entries(Simulation.object.flatten(_values)).reduce(
         (acc, [k, v]) => {
-          acc[k] = String(v)
+          acc[k] = String(v);
 
           if (['username', 'name', 'nick', 'nickname', 'sender'].some((e) => k === e)) {
-            const username = acc?.username || acc?.name || acc?.nick || acc?.nickname || acc?.sender
+            const username = acc?.username || acc?.name || acc?.nick || acc?.nickname || acc?.sender;
 
-            acc['username'] = acc.username || username
-            acc['usernameAt'] = `@${acc.username}`
-            acc['name'] = acc.name || username
-            acc['nick'] = acc.nick || username
-            acc['nickname'] = acc.nickname || username
-            acc['sender'] = acc.sender || username
-            acc['senderAt'] = `@${acc.sender}`
+            acc['username'] = acc.username || username;
+            acc['usernameAt'] = `@${acc.username}`;
+            acc['name'] = acc.name || username;
+            acc['nick'] = acc.nick || username;
+            acc['nickname'] = acc.nickname || username;
+            acc['sender'] = acc.sender || username;
+            acc['senderAt'] = `@${acc.sender}`;
           }
 
           if (['amount', 'count'].some((e) => k === e)) {
-            acc['amount'] = String(amount)
-            acc['count'] = String(acc?.count || amount)
+            acc['amount'] = String(amount);
+            acc['count'] = String(acc?.count || amount);
           }
 
-          acc['currency'] = acc.currency || window.client?.details.currency.symbol || '$'
-          acc['currencyCode'] = acc.currencyCode || window.client?.details.currency.code || 'USD'
+          acc['currency'] = acc.currency || window.client?.details.currency.symbol || '$';
+          acc['currencyCode'] = acc.currencyCode || window.client?.details.currency.code || 'USD';
 
-          acc['skip'] = '<br/>'
-          acc['newline'] = '<br/>'
+          acc['skip'] = '<br/>';
+          acc['newline'] = '<br/>';
 
-          return acc
+          return acc;
         },
         {} as Record<string, string>,
-      )
+      );
 
       const REGEX = {
         PLACEHOLDERS: /{([^}]+)}/g,
         MODIFIERS: /\[(\w+)(:[^=]+)?=([^\]]+)\]/g,
-      }
+      };
 
-      type Modifier = (
-        value: string,
-        param: string | null | undefined,
-        values: { amount?: number; count?: number },
-      ) => string
+      type Modifier = (value: string, param: string | null | undefined, values: { amount?: number; count?: number }) => string;
 
       const MODIFIERS: Record<string, Modifier> = {
         BT1: (value) => (amount > 1 ? value : ''),
@@ -1205,11 +1187,9 @@ export class Simulation {
         LOW: (value) => value.toLowerCase(),
         REV: (value) => value.split('').reverse().join(''),
         CAP: (value) => value.charAt(0).toUpperCase() + value.slice(1).toLowerCase(),
-        FALLBACK: (value, param) => (value.length ? value : param ?? value),
-        COLOR: (value, param) =>
-          mergeSpanStyles(param && !!Simulation.color.validate(param) ? `color: ${param}` : '', value),
-        WEIGHT: (value, param) =>
-          mergeSpanStyles(param && !isNaN(parseInt(param)) ? `font-weight: ${param}` : '', value),
+        FALLBACK: (value, param) => (value.length ? value : (param ?? value)),
+        COLOR: (value, param) => mergeSpanStyles(param && !!Simulation.color.validate(param) ? `color: ${param}` : '', value),
+        WEIGHT: (value, param) => mergeSpanStyles(param && !isNaN(parseInt(param)) ? `font-weight: ${param}` : '', value),
         BOLD: (value) => mergeSpanStyles('font-weight: bold', value),
         LIGHT: (value) => mergeSpanStyles('font-weight: lighter', value),
         STRONG: (value) => mergeSpanStyles('font-weight: bolder', value),
@@ -1221,7 +1201,7 @@ export class Simulation {
         LARGER: (value) => mergeSpanStyles('font-size: larger', value),
         SMALL: (value) => mergeSpanStyles('font-size: smaller', value),
         SHADOW: (value, param) => mergeSpanStyles(`text-shadow: ${param}`, value),
-      }
+      };
 
       const ALIASES = {
         UPC: ['UPPERCASE', 'UPPER', 'UPP'],
@@ -1244,174 +1224,174 @@ export class Simulation {
         SMALL: ['SMALLER', 'SM'],
         SHADOW: ['SHADOW', 'SHD'],
         FALLBACK: ['FALLBACK', 'FB'],
-      }
+      };
 
       function applyModifier(value: string, name: string, param: string | null | undefined): string {
         const canonical = Object.entries(ALIASES).find(([key, aliases]) => {
-          if (aliases.some((alias) => alias.toUpperCase() === name.toUpperCase())) return true
-          else if (key.toUpperCase() === name.toUpperCase()) return true
-          else return false
-        })
-        const use = canonical ? canonical[0] : name.toUpperCase()
+          if (aliases.some((alias) => alias.toUpperCase() === name.toUpperCase())) return true;
+          else if (key.toUpperCase() === name.toUpperCase()) return true;
+          else return false;
+        });
+        const use = canonical ? canonical[0] : name.toUpperCase();
 
-        if (MODIFIERS[use]) return MODIFIERS[use](value, typeof param === 'string' ? param.trim() : null, values)
-        else return value
+        if (MODIFIERS[use]) return MODIFIERS[use](value, typeof param === 'string' ? param.trim() : null, values);
+        else return value;
       }
 
       function replaceAll(string: string): string {
-        let str = string
-        let match
+        let str = string;
+        let match;
 
         while ((match = REGEX.MODIFIERS.exec(str)) !== null) {
-          const [fullMatch, modifier, param, value] = match
+          const [fullMatch, modifier, param, value] = match;
 
-          const newValue = applyModifier(replaceAll(value), modifier, param)
+          const newValue = applyModifier(replaceAll(value), modifier, param);
 
-          str = str.replace(fullMatch, newValue ?? '')
+          str = str.replace(fullMatch, newValue ?? '');
 
-          REGEX.MODIFIERS.lastIndex = 0
+          REGEX.MODIFIERS.lastIndex = 0;
         }
 
-        return str
+        return str;
       }
 
       function parseModifiers(str: string): string {
-        let i = 0
-        const len = str.length
+        let i = 0;
+        const len = str.length;
 
         function parseText(stopChar?: string): string {
-          let out = ''
+          let out = '';
           while (i < len) {
             if (str[i] === '\\') {
               if (i + 1 < len) {
-                out += str[i + 1]
-                i += 2
+                out += str[i + 1];
+                i += 2;
               } else {
-                i++
+                i++;
               }
             } else if (str[i] === '[' && (!stopChar || stopChar !== '[')) {
-              out += parseModifier()
+              out += parseModifier();
             } else if (stopChar && str[i] === stopChar) {
-              i++
-              break
+              i++;
+              break;
             } else {
-              out += str[i++]
+              out += str[i++];
             }
           }
-          return out
+          return out;
         }
 
         function parseModifier(): string {
-          i++
-          let name = ''
-          while (i < len && /[A-Za-z0-9]/.test(str[i])) name += str[i++]
-          let param: string | null = null
+          i++;
+          let name = '';
+          while (i < len && /[A-Za-z0-9]/.test(str[i])) name += str[i++];
+          let param: string | null = null;
           if (str[i] === ':') {
-            i++
-            const paramStart = i
-            while (i < len && str[i] !== '=') i++
-            param = str.slice(paramStart, i)
+            i++;
+            const paramStart = i;
+            while (i < len && str[i] !== '=') i++;
+            param = str.slice(paramStart, i);
           }
-          if (str[i] === '=') i++
-          const value = parseText(']')
-          return applyModifier(value, name, param)
+          if (str[i] === '=') i++;
+          const value = parseText(']');
+          return applyModifier(value, name, param);
         }
 
-        return parseText()
+        return parseText();
       }
 
       function mergeSpanStyles(outerStyle: string, innerHTML: string): string {
-        const match = innerHTML.match(/^<span style="([^"]*)">(.*)<\/span>$/s)
+        const match = innerHTML.match(/^<span style="([^"]*)">(.*)<\/span>$/s);
 
         if (match) {
-          const innerStyle = match[1]
-          const content = match[2]
+          const innerStyle = match[1];
+          const content = match[2];
 
           const mergedStyle = [innerStyle, outerStyle]
 
             .filter(Boolean)
             .join('; ')
             .replace(/\s*;\s*/g, '; ')
-            .trim()
+            .trim();
 
-          return `<span style="${mergedStyle}">${content}</span>`
+          return `<span style="${mergedStyle}">${content}</span>`;
         } else {
-          return `<span style="${outerStyle}">${innerHTML}</span>`
+          return `<span style="${outerStyle}">${innerHTML}</span>`;
         }
       }
 
       let result = template.replace(REGEX.PLACEHOLDERS, (_, key: string) =>
-        typeof values[key] === 'string' || typeof values[key] === 'number' ? String(values[key]) : key ?? key,
-      )
+        typeof values[key] === 'string' || typeof values[key] === 'number' ? String(values[key]) : (key ?? key),
+      );
 
-      result = recursive ? parseModifiers(result) : replaceAll(result)
+      result = recursive ? parseModifiers(result) : replaceAll(result);
 
-      return result
+      return result;
     },
-  }
+  };
 
   static object = {
     flatten(obj: Record<string, any>, prefix: string = ''): Record<string, string> {
-      const result = {} as Record<string, string>
+      const result = {} as Record<string, string>;
 
       for (const key in obj) {
-        if (!Object.prototype.hasOwnProperty.call(obj, key)) continue
+        if (!Object.prototype.hasOwnProperty.call(obj, key)) continue;
 
-        const value = obj[key]
-        const path = prefix ? `${prefix}.${key}` : key
+        const value = obj[key];
+        const path = prefix ? `${prefix}.${key}` : key;
 
         // Handle null and undefined
         if (value === null || value === undefined) {
-          result[path] = String(value)
+          result[path] = String(value);
 
-          continue
+          continue;
         }
 
         // Handle Date objects
         if (value instanceof Date) {
-          result[path] = value.toISOString()
+          result[path] = value.toISOString();
 
-          continue
+          continue;
         }
 
         // Handle Map objects
         if (value instanceof Map) {
           value.forEach((v, k) => {
-            result[`${path}.${k}`] = JSON.stringify(v)
-          })
+            result[`${path}.${k}`] = JSON.stringify(v);
+          });
 
-          continue
+          continue;
         }
 
         // Handle Array objects
         if (Array.isArray(value)) {
           value.forEach((v, i) => {
-            const itemPath = `${path}:${i}`
+            const itemPath = `${path}:${i}`;
 
             if (typeof v === 'object') {
-              Object.assign(result, this.flatten(v, itemPath))
+              Object.assign(result, this.flatten(v, itemPath));
             } else {
-              result[itemPath] = String(v)
+              result[itemPath] = String(v);
             }
-          })
+          });
 
-          continue
+          continue;
         }
 
         // Handle nested objects
         if (typeof value === 'object') {
-          Object.assign(result, this.flatten(value, path))
+          Object.assign(result, this.flatten(value, path));
 
-          continue
+          continue;
         }
 
         // Handle primitive values (string, number, boolean, etc.)
-        result[path] = String(value)
+        result[path] = String(value);
       }
 
-      return result
+      return result;
     },
-  }
+  };
 
   static generate = {
     session: {
@@ -1424,7 +1404,7 @@ export class Simulation {
       } as Record<string, Session$AnyConfig>,
 
       available(): Session$AvailableData {
-        const types = this.types
+        const types = this.types;
 
         return {
           follower: {
@@ -1665,10 +1645,10 @@ export class Simulation {
               message: types.message,
             },
           },
-        }
+        };
       },
     },
-  }
+  };
 
   static fields(settings: FieldSettings): Record<string, StreamElementsField> {
     const defaultOptions: NormalizedFieldSettings = {
@@ -1720,7 +1700,7 @@ export class Simulation {
           [['font-radius'], ' • In pixels'],
         ],
       },
-    }
+    };
 
     function normalizeFieldSettings(settings: FieldSettings): NormalizedFieldSettings {
       return {
@@ -1732,173 +1712,172 @@ export class Simulation {
         settings: {
           types: Array.isArray(settings.settings?.types) ? settings.settings.types : defaultOptions.settings.types,
           addons: Array.isArray(settings.settings?.addons) ? settings.settings.addons : defaultOptions.settings.addons,
-          transforms: Array.isArray(settings.settings?.transforms)
-            ? settings.settings.transforms
-            : defaultOptions.settings.transforms,
+          transforms: Array.isArray(settings.settings?.transforms) ? settings.settings.transforms : defaultOptions.settings.transforms,
           labels: Array.isArray(settings.settings?.labels) ? settings.settings.labels : defaultOptions.settings.labels,
         },
         subgroup: settings.subgroup ?? defaultOptions.subgroup,
         template: settings.template ?? defaultOptions.template,
         subgroupTemplate: settings.subgroupTemplate ?? defaultOptions.subgroupTemplate,
         from: settings.from ?? defaultOptions.from,
-      }
+      };
     }
 
-    const options = normalizeFieldSettings(settings)
+    const options = normalizeFieldSettings(settings);
 
     const extractCssVariables = (): Record<string, string> => {
       return Array.from(document.styleSheets)
         .filter(({ href }) => !href || href.startsWith(window.location.origin))
-        .reduce((acc, { cssRules }) => {
-          if (!cssRules) return acc
-          Array.from(cssRules).forEach((rule) => {
-            if (
-              rule instanceof CSSStyleRule &&
-              rule.selectorText === options.from &&
-              Array.from(rule.style).some((prop) => prop.startsWith('--'))
-            ) {
-              Array.from(rule.style)
-                .filter((prop) => prop.startsWith('--'))
-                .forEach((prop) => {
-                  acc[prop] = rule.style.getPropertyValue(prop).trim()
-                })
-            }
-          })
-          return acc
-        }, {} as Record<string, string>)
-    }
+        .reduce(
+          (acc, { cssRules }) => {
+            if (!cssRules) return acc;
+            Array.from(cssRules).forEach((rule) => {
+              if (rule instanceof CSSStyleRule && rule.selectorText === options.from && Array.from(rule.style).some((prop) => prop.startsWith('--'))) {
+                Array.from(rule.style)
+                  .filter((prop) => prop.startsWith('--'))
+                  .forEach((prop) => {
+                    acc[prop] = rule.style.getPropertyValue(prop).trim();
+                  });
+              }
+            });
+            return acc;
+          },
+          {} as Record<string, string>,
+        );
+    };
 
-    const allVariables = extractCssVariables()
+    const allVariables = extractCssVariables();
 
     const filteredVariables = Object.entries(allVariables)
-      .filter(([name]) =>
-        options.endsWith.some(
-          (suffix) => name.toLowerCase().endsWith(suffix.toLowerCase()) && !name.includes('-options-'),
-        ),
-      )
+      .filter(([name]) => options.endsWith.some((suffix) => name.toLowerCase().endsWith(suffix.toLowerCase()) && !name.includes('-options-')))
       .filter(([name]) => !options.ignore.some((ignoreName) => name.toLowerCase() === ignoreName.toLowerCase()))
-      .reduce((acc, [name, value]) => {
-        acc[name.replace('--', '')] = String(options.replace?.[name] ?? value)
-        return acc
-      }, {} as Record<string, string | number>)
+      .reduce(
+        (acc, [name, value]) => {
+          acc[name.replace('--', '')] = String(options.replace?.[name] ?? value);
+          return acc;
+        },
+        {} as Record<string, string | number>,
+      );
 
-    let usedSubgroups: string[] = []
+    let usedSubgroups: string[] = [];
 
-    const fields = Object.entries(filteredVariables).reduce((fields, [name, value]) => {
-      let type =
-        options.settings.types.find(([names]) => names.some((n) => name.toLowerCase().includes(n)))?.[1] || 'text'
+    const fields = Object.entries(filteredVariables).reduce(
+      (fields, [name, value]) => {
+        let type = options.settings.types.find(([names]) => names.some((n) => name.toLowerCase().includes(n)))?.[1] || 'text';
 
-      let transform =
-        options.settings.transforms.find(([names]) => names.some((n) => name.toLowerCase().includes(n)))?.[1] ||
-        ((v: any) => v)
+        let transform = options.settings.transforms.find(([names]) => names.some((n) => name.toLowerCase().includes(n)))?.[1] || ((v: any) => v);
 
-      let labelAddon =
-        options.settings.labels.find(([names]) => names.some((n) => name.toLowerCase().includes(n)))?.[1] || ''
+        let labelAddon = options.settings.labels.find(([names]) => names.some((n) => name.toLowerCase().includes(n)))?.[1] || '';
 
-      let fieldAddons: Record<string, any> = {
-        type: 'text',
-        label: labelAddon,
-        ...(options.settings.addons.find(([names]) => names.some((n) => name.toLowerCase().includes(n)))?.[1] || {}),
-      }
+        let fieldAddons: Record<string, any> = {
+          type: 'text',
+          label: labelAddon,
+          ...(options.settings.addons.find(([names]) => names.some((n) => name.toLowerCase().includes(n)))?.[1] || {}),
+        };
 
-      ;(['min', 'max', 'step', 'label', 'type'] as const).forEach((addonKey) => {
-        const addonValue = allVariables[`--${name}-${addonKey}`]
-        if (addonValue && addonValue.length) {
-          fieldAddons[addonKey] = isNaN(parseFloat(addonValue))
-            ? String(addonValue).replace(/^['"]|['"]$/g, '')
-            : String(parseFloat(addonValue))
-        }
-      })
+        (['min', 'max', 'step', 'label', 'type'] as const).forEach((addonKey) => {
+          const addonValue = allVariables[`--${name}-${addonKey}`];
+          if (addonValue && addonValue.length) {
+            fieldAddons[addonKey] = isNaN(parseFloat(addonValue)) ? String(addonValue).replace(/^['"]|['"]$/g, '') : String(parseFloat(addonValue));
+          }
+        });
 
-      let subgroupKey = name
-        .replace(/-(size|color|weight|width|height|gap|duration|radius|amount)$/g, '')
-        .replace(/-([a-z])/g, (_, c) => c.toUpperCase())
-        .replace(/[A-Z]/g, ' $&')
-        .toLowerCase()
-        .trim()
-
-      let matchingSubgroupVars = Object.keys(filteredVariables).filter((key) =>
-        key.startsWith(subgroupKey.replace(/[A-Z]/g, '-$&').replaceAll(' ', '-').toLowerCase().slice(1)),
-      )
-
-      if (
-        options.subgroup &&
-        !fields[`${subgroupKey.replace(/[A-Z]/g, '-$&').replaceAll(' ', '-').toLowerCase().slice(1)}-subgroup`] &&
-        matchingSubgroupVars.length > 1 &&
-        !usedSubgroups.includes(name)
-      ) {
-        usedSubgroups.push(...matchingSubgroupVars)
-
-        fields[`${subgroupKey.replace(/[A-Z]/g, '-$&').replaceAll(' ', '-').toLowerCase().slice(1)}-subgroup`] = {
-          type: 'hidden',
-          label: options.subgroupTemplate.replaceAll('{key}', Simulation.string.capitalize(subgroupKey)),
-        }
-      }
-
-      let label = Simulation.string.capitalize(
-        name
+        let subgroupKey = name
+          .replace(/-(size|color|weight|width|height|gap|duration|radius|amount)$/g, '')
           .replace(/-([a-z])/g, (_, c) => c.toUpperCase())
           .replace(/[A-Z]/g, ' $&')
-          .toLowerCase(),
-      )
+          .toLowerCase()
+          .trim();
 
-      value = transform(value) ?? value
+        let matchingSubgroupVars = Object.keys(filteredVariables).filter((key) =>
+          key.startsWith(subgroupKey.replace(/[A-Z]/g, '-$&').replaceAll(' ', '-').toLowerCase().slice(1)),
+        );
 
-      const getCustomOptions = () => {
-        const values = Object.entries(allVariables)
-          .filter(([key]) => key.startsWith(`--${name}-options-`))
-          .reduce((acc, [key, value]) => {
-            const optionLabel = key.replace(`--${name}-options-`, '')
-            if (optionLabel)
-              acc[String(value)] = Simulation.string.capitalize(
-                optionLabel
-                  .replace(/-([a-z])/g, (_, c) => c.toUpperCase())
-                  .replace(/[A-Z]/g, ' $&')
-                  .toLowerCase(),
-              )
-            return acc
-          }, {} as Record<string, string>)
-        return Object.keys(values).length ? values : null
-      }
+        if (
+          options.subgroup &&
+          !fields[`${subgroupKey.replace(/[A-Z]/g, '-$&').replaceAll(' ', '-').toLowerCase().slice(1)}-subgroup`] &&
+          matchingSubgroupVars.length > 1 &&
+          !usedSubgroups.includes(name)
+        ) {
+          usedSubgroups.push(...matchingSubgroupVars);
 
-      const customOptions = getCustomOptions()
+          fields[`${subgroupKey.replace(/[A-Z]/g, '-$&').replaceAll(' ', '-').toLowerCase().slice(1)}-subgroup`] = {
+            type: 'hidden',
+            label: options.subgroupTemplate.replaceAll('{key}', Simulation.string.capitalize(subgroupKey)),
+          };
+        }
 
-      if (customOptions) {
-        type = 'dropdown'
-        fieldAddons.options = customOptions
-        value = String(value)
-      }
+        let label = Simulation.string.capitalize(
+          name
+            .replace(/-([a-z])/g, (_, c) => c.toUpperCase())
+            .replace(/[A-Z]/g, ' $&')
+            .toLowerCase(),
+        );
 
-      Object.entries(fieldAddons).forEach(([key, val]) => {
-        if ([false, 'inherit', 'auto', null].includes(val)) fieldAddons[key] = value
-      })
+        value = transform(value) ?? value;
 
-      fields[name] = {
-        type: (fieldAddons.type as StreamElementsFieldTypes) || type,
-        label: options.template.toString().replaceAll('{key}', Simulation.string.capitalize(label) + fieldAddons.label),
-        value,
-        min: fieldAddons.min,
-        max: fieldAddons.max,
-        step: fieldAddons.step,
-        options: fieldAddons.options,
-      }
+        const getCustomOptions = () => {
+          const values = Object.entries(allVariables)
+            .filter(([key]) => key.startsWith(`--${name}-options-`))
+            .reduce(
+              (acc, [key, value]) => {
+                const optionLabel = key.replace(`--${name}-options-`, '');
+                if (optionLabel)
+                  acc[String(value)] = Simulation.string.capitalize(
+                    optionLabel
+                      .replace(/-([a-z])/g, (_, c) => c.toUpperCase())
+                      .replace(/[A-Z]/g, ' $&')
+                      .toLowerCase(),
+                  );
+                return acc;
+              },
+              {} as Record<string, string>,
+            );
+          return Object.keys(values).length ? values : null;
+        };
 
-      return fields
-    }, {} as Record<string, StreamElementsField>)
+        const customOptions = getCustomOptions();
 
-    const errors = Object.entries(fields).reduce((acc, [name, field]) => {
-      const hasInvalidLabel = field?.label?.includes('undefined')
-      const isInvalidValue = !['hidden', 'button'].includes(field.type) && field.value === undefined
-      if (hasInvalidLabel || isInvalidValue) acc[name] = field
-      return acc
-    }, {} as Record<string, StreamElementsField>)
+        if (customOptions) {
+          type = 'dropdown';
+          fieldAddons.options = customOptions;
+          value = String(value);
+        }
+
+        Object.entries(fieldAddons).forEach(([key, val]) => {
+          if ([false, 'inherit', 'auto', null].includes(val)) fieldAddons[key] = value;
+        });
+
+        fields[name] = {
+          type: (fieldAddons.type as StreamElementsFieldTypes) || type,
+          label: options.template.toString().replaceAll('{key}', Simulation.string.capitalize(label) + fieldAddons.label),
+          value,
+          min: fieldAddons.min,
+          max: fieldAddons.max,
+          step: fieldAddons.step,
+          options: fieldAddons.options,
+        };
+
+        return fields;
+      },
+      {} as Record<string, StreamElementsField>,
+    );
+
+    const errors = Object.entries(fields).reduce(
+      (acc, [name, field]) => {
+        const hasInvalidLabel = field?.label?.includes('undefined');
+        const isInvalidValue = !['hidden', 'button'].includes(field.type) && field.value === undefined;
+        if (hasInvalidLabel || isInvalidValue) acc[name] = field;
+        return acc;
+      },
+      {} as Record<string, StreamElementsField>,
+    );
 
     if (Object.keys(errors).length) {
-      Zynex.logger.error('Simulation.fields: Detected errors in generated fields:', errors)
+      Zynex.logger.error('Simulation.fields: Detected errors in generated fields:', errors);
 
-      throw new Error('Error while processing fields')
+      throw new Error('Error while processing fields');
     }
 
-    return fields
+    return fields;
   }
 }

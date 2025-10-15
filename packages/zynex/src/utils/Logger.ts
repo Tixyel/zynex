@@ -1,22 +1,22 @@
-type LoggerThemeName = 'error' | 'success' | 'alert' | 'warn' | 'status' | 'received' | 'simple' | 'info'
+type LoggerThemeName = 'error' | 'success' | 'alert' | 'warn' | 'status' | 'received' | 'simple' | 'info';
 
 interface LoggerTheme {
-  name: LoggerThemeName
-  color?: string
-  background?: string
-  bold?: boolean
-  italic?: boolean
-  underline?: boolean
-  fontSize?: number
+  name: LoggerThemeName;
+  color?: string;
+  background?: string;
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
+  fontSize?: number;
   template?: {
-    before?: string
-    after?: string
-  }
+    before?: string;
+    after?: string;
+  };
 }
 
-type LoggerLogFunction = (...args: any[]) => void
+type LoggerLogFunction = (...args: any[]) => void;
 
-type LoggerMethods = Record<LoggerThemeName, LoggerLogFunction>
+type LoggerMethods = Record<LoggerThemeName, LoggerLogFunction>;
 
 export class Logger implements LoggerMethods {
   private readonly themes: LoggerTheme[] = [
@@ -92,47 +92,45 @@ export class Logger implements LoggerMethods {
       fontSize: 14,
       template: { before: ' ℹ ', after: '' },
     },
-  ]
+  ];
 
-  error: LoggerLogFunction = () => {}
-  success: LoggerLogFunction = () => {}
-  alert: LoggerLogFunction = () => {}
-  warn: LoggerLogFunction = () => {}
-  status: LoggerLogFunction = () => {}
-  received: LoggerLogFunction = () => {}
-  simple: LoggerLogFunction = () => {}
-  info: LoggerLogFunction = () => {}
+  error: LoggerLogFunction = () => {};
+  success: LoggerLogFunction = () => {};
+  alert: LoggerLogFunction = () => {};
+  warn: LoggerLogFunction = () => {};
+  status: LoggerLogFunction = () => {};
+  received: LoggerLogFunction = () => {};
+  simple: LoggerLogFunction = () => {};
+  info: LoggerLogFunction = () => {};
 
   constructor() {
     this.themes.forEach((theme) => {
-      const styles: string[] = []
+      const styles: string[] = [];
 
-      if (theme.background && theme.background !== 'transparent') styles.push(`background-color: ${theme.background}`)
-      if (theme.color) styles.push(`color: ${theme.color}`)
-      if (theme.bold) styles.push('font-weight: bold')
-      if (theme.italic) styles.push('font-style: italic')
-      if (theme.underline) styles.push('text-decoration: underline')
-      if (theme.fontSize) styles.push(`font-size: ${theme.fontSize}px`)
+      if (theme.background && theme.background !== 'transparent') styles.push(`background-color: ${theme.background}`);
+      if (theme.color) styles.push(`color: ${theme.color}`);
+      if (theme.bold) styles.push('font-weight: bold');
+      if (theme.italic) styles.push('font-style: italic');
+      if (theme.underline) styles.push('text-decoration: underline');
+      if (theme.fontSize) styles.push(`font-size: ${theme.fontSize}px`);
 
-      const signal = '%c'
+      const signal = '%c';
 
       const logFn: LoggerLogFunction = (...args: any[]) => {
-        const textContent = Array.from(args).filter((arg) => typeof arg === 'string' || typeof arg === 'number')
-        const objectContent = Array.from(args).filter((arg) => typeof arg !== 'string' && typeof arg !== 'number')
-        const css = textContent.length > 0 ? styles.join('; ') : null
+        const textContent = Array.from(args).filter((arg) => typeof arg === 'string' || typeof arg === 'number');
+        const objectContent = Array.from(args).filter((arg) => typeof arg !== 'string' && typeof arg !== 'number');
+        const css = textContent.length > 0 ? styles.join('; ') : null;
 
         const log: any[] = [
-          textContent.length > 0
-            ? signal + (theme.template?.before ?? '') + textContent.join(' ') + (theme.template?.after ?? '')
-            : null,
+          textContent.length > 0 ? signal + (theme.template?.before ?? '') + textContent.join(' ') + (theme.template?.after ?? '') : null,
           css,
           ...objectContent,
-        ].filter(Boolean)
+        ].filter(Boolean);
 
-        return console.log(...log)
-      }
+        return console.log(...log);
+      };
 
-      this[theme.name] = logFn
-    })
+      this[theme.name] = logFn;
+    });
   }
 }

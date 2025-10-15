@@ -17,9 +17,9 @@ Zynex is a TypeScript/JavaScript helper library for developing custom widgets fo
 ```html
 <script src="https://cdn.jsdelivr.net/npm/zynex/dist/zynex.umd.js"></script>
 <script>
-  const { Client } = window.Zynex
+  const { Client } = window.Zynex;
 
-  new Client({ id: 'my-custom-widget' }).on('load', (data) => {})
+  new Client({ id: 'my-custom-widget' }).on('load', (data) => {});
 </script>
 ```
 

@@ -1,46 +1,46 @@
-import { Session } from '../session.js'
+import { Session } from '../session.js';
 
-export type onWidgetLoadEvent = CustomEvent<onWidgetLoad>
+export type onWidgetLoadEvent = CustomEvent<onWidgetLoad>;
 
 export type onWidgetLoad = {
   channel: {
-    username: string
+    username: string;
     /**
      * The channel's streamelements api token (used to authenticate requests to the SE API)
      */
-    apiToken: string
+    apiToken: string;
     /**
      * The channel's unique identifier in the SE system
      */
-    id: string
+    id: string;
     /**
      * The channel's unique identifier from the provider (e.g. Twitch user ID)
      */
-    providerId: string
-    avatar: string
-  }
+    providerId: string;
+    avatar: string;
+  };
   currency: {
-    code: string
-    name: string
-    symbol: string
-  }
-  fieldData: Record<string, string | number | boolean>
-  recents: Array<Object>
+    code: string;
+    name: string;
+    symbol: string;
+  };
+  fieldData: Record<string, string | number | boolean>;
+  recents: Array<Object>;
   session: {
-    data: Session
-    autoReset: boolean
-    calendar: boolean
-    resetOnStart: boolean
-  }
+    data: Session;
+    autoReset: boolean;
+    calendar: boolean;
+    resetOnStart: boolean;
+  };
   overlay: {
     /**
      * Whether the overlay is being viewed in the editor mode (in the SE dashboard) or live (on stream)
      */
-    isEditorMode: boolean
+    isEditorMode: boolean;
     /**
      * Whether the overlay is muted or not
      */
-    muted: boolean
-  }
-  emulated?: boolean
-}
+    muted: boolean;
+  };
+  emulated?: boolean;
+};

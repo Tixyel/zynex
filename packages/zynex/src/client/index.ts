@@ -1,53 +1,53 @@
-import { onWidgetLoad } from '../types/streamelements/events/onWidgetLoad.js'
-import { Alejo$Pronouns$name } from '../types/alejo/pronouns.js'
-import { EventProvider } from '../utils/EventProvider.js'
-import { useStorage } from '../utils/useStorage.js'
-import { Session } from '../types/streamelements/session.js'
-import { ClientEvents as events } from '../types/client.js'
-import { Command } from '../actions/command.js'
-import { Button } from '../actions/button.js'
+import { onWidgetLoad } from '../types/streamelements/events/onWidgetLoad.js';
+import { Alejo$Pronouns$name } from '../types/alejo/pronouns.js';
+import { EventProvider } from '../utils/EventProvider.js';
+import { useStorage } from '../utils/useStorage.js';
+import { Session } from '../types/streamelements/session.js';
+import { ClientEvents as events } from '../types/client.js';
+import { Command } from '../actions/command.js';
+import { Button } from '../actions/button.js';
 
 type ClientEvents = {
-  load: [event: onWidgetLoad]
-  action: [action: any, type: 'created' | 'updated' | 'executed']
-  session: [session: Session]
-  event: [event: events]
-}
+  load: [event: onWidgetLoad];
+  action: [action: any, type: 'created' | 'updated' | 'executed'];
+  session: [session: Session];
+  event: [event: events];
+};
 
 type ClientOptions = {
-  id?: string
-}
+  id?: string;
+};
 
 type ClientStorageOptions<T> = {
-  value: T
-  timestamp: number
-  expire: number
-}
+  value: T;
+  timestamp: number;
+  expire: number;
+};
 
 type ClientStorage = {
-  user: Record<string, ClientStorageOptions<string>>
-  avatar: Record<string, ClientStorageOptions<string>>
-  pronoun: Record<string, ClientStorageOptions<Alejo$Pronouns$name>>
-  emote: Record<string, ClientStorageOptions<string>>
-}
+  user: Record<string, ClientStorageOptions<string>>;
+  avatar: Record<string, ClientStorageOptions<string>>;
+  pronoun: Record<string, ClientStorageOptions<Alejo$Pronouns$name>>;
+  emote: Record<string, ClientStorageOptions<string>>;
+};
 
 export class Client extends EventProvider<ClientEvents> {
-  public id: string = 'default'
+  public id: string = 'default';
 
-  public storage!: useStorage<ClientStorage>
+  public storage!: useStorage<ClientStorage>;
 
-  public fields: onWidgetLoad['fieldData'] = {}
+  public fields: onWidgetLoad['fieldData'] = {};
 
-  public session!: Session
+  public session!: Session;
 
-  public loaded: boolean = false
+  public loaded: boolean = false;
 
   constructor(options: ClientOptions) {
-    super()
+    super();
 
-    this.id = options.id || this.id
+    this.id = options.id || this.id;
 
-    window.client = this
+    window.client = this;
 
     this.storage = new useStorage({
       id: this.id,
@@ -57,29 +57,29 @@ export class Client extends EventProvider<ClientEvents> {
         pronoun: {},
         emote: {},
       },
-    })
+    });
   }
 
   public actions: {
-    commands: Command[]
-    buttons: Button[]
+    commands: Command[];
+    buttons: Button[];
   } = {
     commands: [],
     buttons: [],
-  }
+  };
 
   public details!: {
-    provider: 'twitch' | 'youtube' | 'kick'
-    user: onWidgetLoad['channel']
-    currency: onWidgetLoad['currency']
-    overlay: onWidgetLoad['overlay']
-  }
+    provider: 'twitch' | 'youtube' | 'kick';
+    user: onWidgetLoad['channel'];
+    currency: onWidgetLoad['currency'];
+    overlay: onWidgetLoad['overlay'];
+  };
 
   public cache: { avatar: number; pronoun: number; emote: number } = {
     avatar: 30,
     pronoun: 30,
     emote: 30,
-  }
+  };
 
   override on<K extends keyof ClientEvents>(eventName: K, callback: (...args: ClientEvents[K]) => void): this {
     if (eventName === 'load' && this.loaded) {
@@ -93,13 +93,13 @@ export class Client extends EventProvider<ClientEvents> {
           overlay: this.details.overlay,
           emulated: false,
         } as onWidgetLoad,
-      ] as unknown as ClientEvents[K])
+      ] as unknown as ClientEvents[K]);
 
-      return this
+      return this;
     }
 
-    super.on(eventName, callback)
+    super.on(eventName, callback);
 
-    return this
+    return this;
   }
 }

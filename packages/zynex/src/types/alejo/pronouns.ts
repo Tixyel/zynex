@@ -29,7 +29,7 @@ export type Alejo$Pronouns$name =
   | 'ziehir'
   | 'perper'
   | 'eem'
-  | 'itits'
+  | 'itits';
 
 export type Alejo$Pronouns$display =
   | 'He/Him'
@@ -45,10 +45,10 @@ export type Alejo$Pronouns$display =
   | 'Zie/Hir'
   | 'Per/Per'
   | 'E/Em'
-  | 'It/Its'
+  | 'It/Its';
 
 export type Alejo$Pronouns$User = {
-  id: string
-  login: string
-  pronouns: Alejo$Pronouns$name
-}
+  id: string;
+  login: string;
+  pronouns: Alejo$Pronouns$name;
+};

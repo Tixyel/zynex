@@ -1,6 +1,6 @@
 export type StreamElements$EventSkip = {
-  listener: 'event:skip'
-  event: EventSkip
-}
+  listener: 'event:skip';
+  event: EventSkip;
+};
 
-type EventSkip = {}
+type EventSkip = {};

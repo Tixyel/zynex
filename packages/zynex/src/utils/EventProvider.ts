@@ -20,7 +20,7 @@ export class EventProvider<EventMap extends Record<string, any[]> = Record<strin
   /**
    * Stores registered event listeners.
    */
-  private registeredEvents: { [K in keyof EventMap]?: Array<(this: this, ...args: EventMap[K]) => any> } = {}
+  private registeredEvents: { [K in keyof EventMap]?: Array<(this: this, ...args: EventMap[K]) => any> } = {};
 
   /**
    * Emits an event to all registered listeners.
@@ -29,9 +29,9 @@ export class EventProvider<EventMap extends Record<string, any[]> = Record<strin
    * @param args Arguments to pass to the listeners.
    */
   emit<K extends keyof EventMap>(eventName: K, ...args: EventMap[K]): any[] {
-    const listeners = this.registeredEvents[eventName] || []
+    const listeners = this.registeredEvents[eventName] || [];
 
-    return listeners.map((listener) => listener.apply(this, args))
+    return listeners.map((listener) => listener.apply(this, args));
   }
 
   /**
@@ -41,16 +41,16 @@ export class EventProvider<EventMap extends Record<string, any[]> = Record<strin
    */
   on<K extends keyof EventMap>(eventName: K, callback: (this: this, ...args: EventMap[K]) => any): this {
     if (typeof callback !== 'function') {
-      throw new TypeError('Callback must be a function')
+      throw new TypeError('Callback must be a function');
     }
 
     if (!this.registeredEvents[eventName]) {
-      this.registeredEvents[eventName] = []
+      this.registeredEvents[eventName] = [];
     }
 
-    this.registeredEvents[eventName]!.push(callback)
+    this.registeredEvents[eventName]!.push(callback);
 
-    return this
+    return this;
   }
 
   /**
@@ -59,17 +59,17 @@ export class EventProvider<EventMap extends Record<string, any[]> = Record<strin
    * @param callback The callback function to remove.
    */
   off<K extends keyof EventMap>(eventName: K, callback?: (this: this, ...args: EventMap[K]) => any): this {
-    const listeners = this.registeredEvents[eventName] || []
+    const listeners = this.registeredEvents[eventName] || [];
 
     if (!callback) {
-      this.registeredEvents[eventName] = []
+      this.registeredEvents[eventName] = [];
 
-      return this
+      return this;
     }
 
-    this.registeredEvents[eventName] = listeners.filter((fn) => fn !== callback)
+    this.registeredEvents[eventName] = listeners.filter((fn) => fn !== callback);
 
-    return this
+    return this;
   }
 
   /**
@@ -79,13 +79,13 @@ export class EventProvider<EventMap extends Record<string, any[]> = Record<strin
    */
   once<K extends keyof EventMap>(eventName: K, callback: (this: this, ...args: EventMap[K]) => any): this {
     const wrapper = (...args: EventMap[K]) => {
-      this.off(eventName, wrapper)
-      callback.apply(this, args)
-    }
+      this.off(eventName, wrapper);
+      callback.apply(this, args);
+    };
 
-    this.on(eventName, wrapper)
+    this.on(eventName, wrapper);
 
-    return this
+    return this;
   }
 
   /**
@@ -93,8 +93,8 @@ export class EventProvider<EventMap extends Record<string, any[]> = Record<strin
    * @param eventName The name of the event.
    */
   removeAllListeners<K extends keyof EventMap>(eventName: K): this {
-    this.registeredEvents[eventName] = []
+    this.registeredEvents[eventName] = [];
 
-    return this
+    return this;
   }
 }

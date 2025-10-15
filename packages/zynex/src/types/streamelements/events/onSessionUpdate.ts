@@ -1,7 +1,7 @@
-import { Session } from '../session.js'
+import { Session } from '../session.js';
 
-export type onSessionUpdateEvent = CustomEvent<onSessionUpdate>
+export type onSessionUpdateEvent = CustomEvent<onSessionUpdate>;
 
 export type onSessionUpdate = {
-  session: Session
-}
+  session: Session;
+};

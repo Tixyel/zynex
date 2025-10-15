@@ -1,6 +1,6 @@
 export type StreamElements$AlertService = {
-  listener: 'alertService:toggleSound'
-  event: toggleSound
-}
+  listener: 'alertService:toggleSound';
+  event: toggleSound;
+};
 
-type toggleSound = {}
+type toggleSound = {};
