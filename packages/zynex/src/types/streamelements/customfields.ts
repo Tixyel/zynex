@@ -24,6 +24,8 @@ export type StreamElementsField = {
   multiple?: boolean;
 };
 
+export type StreamElementsFieldValue = string | number | boolean | undefined;
+
 export type StreamElementsFieldTypeMap = Array<[string[], StreamElementsFieldTypes]>;
 export type StreamElementsFieldAddonsMap = Array<[string[], Record<string, any>]>;
 export type StreamElementsFieldTransformMap = Array<[string[], (value: string | number) => string | number]>;
