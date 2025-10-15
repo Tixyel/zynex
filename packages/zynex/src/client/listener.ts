@@ -1,12 +1,14 @@
+import { Simulation } from '../simulation/index.js';
 import { ClientEvents, Provider } from '../types/client.js';
 import { Client } from './index.js';
 
 window.addEventListener('load', () => {
   if (window.client instanceof Client) {
+    Simulation.start();
   }
 });
 
-window.addEventListener('onWidgetLoad', (data) => {
+window.addEventListener('onWidgetLoad', async (data) => {
   const { detail } = data;
 
   if (window.client instanceof Client) {
@@ -15,24 +17,33 @@ window.addEventListener('onWidgetLoad', (data) => {
     client.fields = detail.fieldData;
     client.session = detail.session.data;
 
-    client.details.user = detail.channel;
-    client.details.currency = detail.currency;
-    client.details.overlay = detail.overlay;
+    client.details = {
+      ...client.details,
+      user: detail.channel,
+      currency: detail.currency,
+      overlay: detail.overlay,
+    };
 
     if (detail.channel.id && !detail.emulated) {
-      fetch(`https://api.streamelements.com/kappa/v2/channels/${detail.channel.id}/`)
+      await fetch(`https://api.streamelements.com/kappa/v2/channels/${detail.channel.id}/`)
         .then((res) => res.json())
         .then((profile) => {
           if (profile.provider) {
             client.details.provider = profile.provider;
+
+            return profile.provider;
           } else {
-            client.details.provider = 'twitch';
+            client.details.provider = 'local';
           }
         })
         .catch(() => {
-          client.details.provider = 'twitch';
+          client.details.provider = 'local';
         });
+    } else {
+      client.details.provider = 'local';
     }
+
+    client.emit('load', detail);
 
     client.storage.on('load', () => {
       client.storage.add(`avatar.${detail.channel.providerId.toLowerCase()}`, {
@@ -221,6 +232,6 @@ window.addEventListener('onEventReceived', ({ detail }) => {
       }
     }
 
-    window.client.emit('event', received);
+    // window.client.emit('event', received);
   }
 });
